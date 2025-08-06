@@ -2,6 +2,8 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { createServerConfig } from "./config/server/server.config.js";
+import { setupProcessHandlers } from "./utils/processHandlers.js";
 import { startServer } from "./utils/serverStartup.js";
 import { setupRoutes } from "./routes/index.js";
 
@@ -10,21 +12,12 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const createServerConfig = () => {
-    const PORT = process.env.PORT || 5000;
-    const NODE_ENV = process.env.NODE_ENV || "development";
-    const projectRoot = path.resolve(__dirname, "..");
-
-    return { PORT, NODE_ENV, __dirname: projectRoot };
-};
-
 export const createApp = () => {
     const app = express();
-    const { NODE_ENV, __dirname } = createServerConfig();
+    const { NODE_ENV } = createServerConfig(__dirname);
 
     console.log("🚀 Starting MERN Chat-App Server...");
     console.log(`📍 Environment: ${NODE_ENV}`);
-    // console.log(`📂 Project Root: ${__dirname}`);
 
     // Routes
     setupRoutes(app);
@@ -34,8 +27,11 @@ export const createApp = () => {
 
 export const bootstrap = async () => {
     try {
+        // Setup process handlers first
+        setupProcessHandlers();
+
         // Get server configuration
-        const { PORT, NODE_ENV, __dirname } = createServerConfig();
+        const { PORT, NODE_ENV } = createServerConfig(__dirname);
 
         // Create Express app with all middleware and routes
         const app = createApp();

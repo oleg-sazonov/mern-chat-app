@@ -1,13 +1,10 @@
-// import { connectDB } from "../config/db.js";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { connectDB } from "../config/db/db.config.js";
 
 export const startServer = async (app, PORT, NODE_ENV) => {
     try {
         // Connect to database first
-        // console.log("🔌 Connecting to database...");
-        // await connectDB();
+        console.log("🔌 Connecting to database...");
+        await connectDB();
 
         // Start the server
         const server = app.listen(PORT, () => {
