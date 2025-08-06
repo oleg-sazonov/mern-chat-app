@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { startServer } from "./utils/serverStartup.js";
+import { setupRoutes } from "./routes/index.js";
 
 dotenv.config();
 
@@ -24,6 +25,9 @@ export const createApp = () => {
     console.log("🚀 Starting MERN Chat-App Server...");
     console.log(`📍 Environment: ${NODE_ENV}`);
     // console.log(`📂 Project Root: ${__dirname}`);
+
+    // Routes
+    setupRoutes(app);
 
     return app;
 };

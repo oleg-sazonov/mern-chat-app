@@ -1,4 +1,7 @@
 // import { connectDB } from "../config/db.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const startServer = async (app, PORT, NODE_ENV) => {
     try {
