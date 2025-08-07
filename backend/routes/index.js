@@ -15,8 +15,8 @@ export const setupRoutes = (app) => {
     app.use("/api/auth", authRoutes);
 
     console.log("📋 API routes configured");
-    console.log("   📍 GET    /health");
-    console.log("   📍 GET    /api/auth/signup");
-    console.log("   📍 GET    /api/auth/login");
-    console.log("   📍 GET    /api/auth/logout");
+    console.log("   📍 GET     /health");
+    console.log("   📍 POST    /api/auth/signup");
+    console.log("   📍 POST    /api/auth/login");
+    console.log("   📍 POST    /api/auth/logout");
 };

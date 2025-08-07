@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { createServerConfig } from "./config/server/server.config.js";
+import { setupBasicMiddleware } from "./middleware/basicMiddleware.js";
 import { setupProcessHandlers } from "./utils/processHandlers.js";
 import { startServer } from "./utils/serverStartup.js";
 import { setupRoutes } from "./routes/index.js";
@@ -18,6 +19,9 @@ export const createApp = () => {
 
     console.log("🚀 Starting MERN Chat-App Server...");
     console.log(`📍 Environment: ${NODE_ENV}`);
+
+    // Setup basic middleware
+    setupBasicMiddleware(app, NODE_ENV);
 
     // Routes
     setupRoutes(app);
