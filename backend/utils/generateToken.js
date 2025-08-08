@@ -11,7 +11,6 @@ const generateTokenAndSetCookie = (user, res) => {
     // Set cookie with token
     res.cookie("token", token, {
         httpOnly: true, // Prevent XSS attacks (Cross-Site Scripting)
-        // secure: process.env.NODE_ENV === "production",
         sameSite: "strict", // Prevent CSRF attacks (Cross-Site Request Forgery)
         maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days in milliseconds
         secure: process.env.NODE_ENV === "production", // Use secure cookies in production

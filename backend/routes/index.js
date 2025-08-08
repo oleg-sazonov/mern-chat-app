@@ -1,4 +1,4 @@
-import authRoutes from "./auths.routes.js";
+import authRoutes from "./auth.routes.js";
 
 export const setupRoutes = (app) => {
     // Health check route (before API routes)
