@@ -25,9 +25,9 @@ cd mern-chat-app
 
 #### 2. Install backend dependencies:
 
-    ```bash
-    npm install
-    ```
+```bash
+npm install
+```
 
 ---
 

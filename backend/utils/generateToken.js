@@ -9,7 +9,7 @@ const generateTokenAndSetCookie = (user, res) => {
     );
 
     // Set cookie with token
-    res.cookie("token", token, {
+    res.cookie("jwt", token, {
         httpOnly: true, // Prevent XSS attacks (Cross-Site Scripting)
         sameSite: "strict", // Prevent CSRF attacks (Cross-Site Request Forgery)
         maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days in milliseconds

@@ -65,7 +65,7 @@ export const signup = async (req, res) => {
             res.status(500).json({ message: "User registration failed" });
         }
     } catch (error) {
-        console.error("Signup error:", error.message);
+        console.error("Error in signup controller:", error.message);
         if (error.name === "ValidationError") {
             return res.status(400).json({ message: error.message });
         }
@@ -73,10 +73,59 @@ export const signup = async (req, res) => {
     }
 };
 
-export const login = (req, res) => {
-    res.status(200).json({ message: "Login endpoint" });
+export const login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+
+        // Use optional chaining to handle case where user is null and avoid errors
+        const isPasswordValid = await bcrypt.compare(
+            password,
+            user?.password || ""
+        );
+
+        if (!user || !isPasswordValid) {
+            return res
+                .status(401)
+                .json({ message: "Invalid username or password" });
+        }
+
+        // Generate JWT token and set cookie
+        const token = generateTokenAndSetCookie(user, res);
+
+        res.status(200).json({
+            user: {
+                _id: user._id,
+                fullName: user.fullName,
+                username: user.username,
+                profilePicture: user.profilePicture,
+            },
+            message: "Login successful",
+        });
+    } catch (error) {
+        console.error("Error in login controller:", error.message);
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: "Internal server error" });
+    }
 };
 
 export const logout = (req, res) => {
-    res.status(200).json({ message: "Logout endpoint" });
+    try {
+        // Clear the cookie by setting it to an empty value and a past expiration date
+        res.clearCookie("jwt", {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+        });
+
+        res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+        console.error("Error in logout controller:", error.message);
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: "Internal server error" });
+    }
 };
