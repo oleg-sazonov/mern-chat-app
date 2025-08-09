@@ -13,6 +13,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Create and configure the Express application
 export const createApp = () => {
     const app = express();
     const { NODE_ENV } = createServerConfig(__dirname);
@@ -29,6 +30,7 @@ export const createApp = () => {
     return app;
 };
 
+// Bootstrap function to initialize the application
 export const bootstrap = async () => {
     try {
         // Setup process handlers first

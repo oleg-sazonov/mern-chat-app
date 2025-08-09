@@ -1,5 +1,6 @@
 import { disconnectDB } from "../config/db/db.config.js";
 
+// This module sets up process handlers for graceful shutdown and error handling in a Node.js application.
 export const setupProcessHandlers = () => {
     // Graceful shutdown
     const gracefulShutdown = async (signal) => {

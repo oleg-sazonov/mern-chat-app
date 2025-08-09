@@ -1,3 +1,30 @@
+/**
+ * protectRoute Middleware
+ * -----------------------
+ * Protects routes by ensuring the request has a valid JWT token in cookies.
+ *
+ * Usage:
+ *   Add as middleware to any route that requires authentication.
+ *   Example:
+ *     router.post("/send/:receiverId", protectRoute, sendMessage);
+ *
+ * How it works:
+ *   1. Extracts the JWT token from the "jwt" cookie.
+ *   2. Verifies the token using the JWT secret.
+ *   3. Finds the user by ID from the decoded token (excluding password).
+ *   4. Attaches the user object to req.user for downstream handlers.
+ *   5. If any step fails, responds with an appropriate error and status code.
+ *
+ * Error Handling:
+ *   - 401 Unauthorized: No token provided.
+ *   - 403 Unauthorized: Invalid token or forbidden access.
+ *   - 404 Not Found:    User not found in database.
+ *
+ * Dependencies:
+ *   - jsonwebtoken
+ *   - User model
+ */
+
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 

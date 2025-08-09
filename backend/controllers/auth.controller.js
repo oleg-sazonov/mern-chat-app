@@ -1,3 +1,47 @@
+/**
+ * Auth Controller
+ * ---------------
+ * Handles user authentication and authorization for the chat application.
+ *
+ * Exports:
+ *   - signup: Registers a new user.
+ *   - login: Authenticates a user and issues a JWT token.
+ *   - logout: Logs out the user by clearing the authentication cookie.
+ *
+ * signup(req, res)
+ * ----------------
+ * Registers a new user.
+ * - Validates required fields: fullName, username, password, confirmPassword, gender.
+ * - Checks for existing username.
+ * - Hashes the password using bcrypt.
+ * - Generates a profile picture URL (RoboHash by default).
+ * - Creates and saves the user in the database.
+ * - Issues a JWT token and sets it as an HTTP-only cookie.
+ * - Responds with user info (excluding password) and a success message.
+ * - Handles validation and server errors.
+ *
+ * login(req, res)
+ * ---------------
+ * Authenticates a user.
+ * - Validates username and password.
+ * - Checks if the user exists and password is correct.
+ * - Issues a JWT token and sets it as an HTTP-only cookie.
+ * - Responds with user info (excluding password) and a success message.
+ * - Handles validation and server errors.
+ *
+ * logout(req, res)
+ * ----------------
+ * Logs out the user.
+ * - Clears the JWT authentication cookie.
+ * - Responds with a logout success message.
+ * - Handles validation and server errors.
+ *
+ * Dependencies:
+ *   - bcrypt
+ *   - User model
+ *   - generateTokenAndSetCookie utility
+ */
+
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import generateTokenAndSetCookie from "../utils/generateToken.js";
