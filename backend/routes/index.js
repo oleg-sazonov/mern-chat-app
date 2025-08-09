@@ -22,5 +22,6 @@ export const setupRoutes = (app) => {
     console.log("   📍 POST    /api/auth/signup");
     console.log("   📍 POST    /api/auth/login");
     console.log("   📍 POST    /api/auth/logout");
+    console.log("   📍 GET     /api/messages/:receiverId (protected)");
     console.log("   📍 POST    /api/messages/send/:receiverId (protected)");
 };
