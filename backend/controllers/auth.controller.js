@@ -37,28 +37,28 @@ export const signup = async (req, res) => {
         const girlProfilePicture = `https://avatar.iran.liara.run/public/girl?username=${username}`;
 
         // Create new user
-        const newUser = new User({
-            fullName,
-            username,
-            password: hashedPassword,
-            gender,
-            profilePicture:
-                gender === "male" ? boyProfilePicture : girlProfilePicture,
-        });
-
-        // Uncomment the following lines if you want to use RoboHash for avatars
-        // const avatarUrl = `https://robohash.org/${username}.png`;
-
-        // Uncomment the following lines if you want to use DiceBear for avatars
-        // const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`;
-
         // const newUser = new User({
         //     fullName,
         //     username,
         //     password: hashedPassword,
         //     gender,
-        //     profilePicture: avatarUrl,
+        //     profilePicture:
+        //         gender === "male" ? boyProfilePicture : girlProfilePicture,
         // });
+
+        // Uncomment the following lines if you want to use RoboHash for avatars
+        const avatarUrl = `https://robohash.org/${username}.png`;
+
+        // Uncomment the following lines if you want to use DiceBear for avatars
+        // const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`;
+
+        const newUser = new User({
+            fullName,
+            username,
+            password: hashedPassword,
+            gender,
+            profilePicture: avatarUrl,
+        });
 
         if (newUser) {
             // Generate JWT token

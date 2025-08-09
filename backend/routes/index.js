@@ -1,4 +1,5 @@
 import authRoutes from "./auth.routes.js";
+import messageRoutes from "./message.routes.js";
 
 export const setupRoutes = (app) => {
     // Health check route (before API routes)
@@ -13,10 +14,13 @@ export const setupRoutes = (app) => {
 
     // API routes
     app.use("/api/auth", authRoutes);
+    app.use("/api/messages", messageRoutes);
 
     console.log("📋 API routes configured");
+    console.log("Available routes:");
     console.log("   📍 GET     /health");
     console.log("   📍 POST    /api/auth/signup");
     console.log("   📍 POST    /api/auth/login");
     console.log("   📍 POST    /api/auth/logout");
+    console.log("   📍 POST    /api/messages/send/:receiverId (protected)");
 };

@@ -1,10 +1,14 @@
 import compression from "compression";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import express from "express";
 
-export const setupBasicMiddleware = (app, NODE_ENV) => {
+export const setupBasicMiddlewares = (app, NODE_ENV) => {
     // Compression
     app.use(compression());
+
+    // Cookie parsing
+    app.use(cookieParser());
 
     // Logging
     if (NODE_ENV === "production") {
