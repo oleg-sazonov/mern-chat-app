@@ -1,5 +1,6 @@
 import authRoutes from "./auth.routes.js";
 import messageRoutes from "./message.routes.js";
+import userRoutes from "./user.routes.js";
 
 export const setupRoutes = (app) => {
     // Health check route (before API routes)
@@ -15,6 +16,7 @@ export const setupRoutes = (app) => {
     // API routes
     app.use("/api/auth", authRoutes);
     app.use("/api/messages", messageRoutes);
+    app.use("/api/users", userRoutes);
 
     console.log("📋 API routes configured");
     console.log("Available routes:");
