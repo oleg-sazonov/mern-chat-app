@@ -23,7 +23,7 @@ cd mern-chat-app
 
 ---
 
-#### 2. Install backend dependencies:
+#### 2. Install dependencies (backend and frontend):
 
 ```bash
 npm install
@@ -46,6 +46,21 @@ NODE_ENV=development
 
 ```bash
 npm run server
+```
+
+---
+
+#### 5. Start the frontend (React/Vite) from the root folder:
+
+```bash
+npm run frontend
+```
+
+You can also build or preview the frontend with:
+
+```bash
+npm run frontend:build
+npm run frontend:preview
 ```
 
 ---
