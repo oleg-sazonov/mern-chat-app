@@ -1,3 +1,41 @@
+/**
+ * db.config.js
+ * ------------
+ * MongoDB connection configuration and management using Mongoose.
+ *
+ * Features:
+ *   - Registers connection event handlers (connected, error, disconnected, reconnected, timeout) only once.
+ *   - Validates MongoDB URI and its format before connecting.
+ *   - Provides optimized connection options for pool size, timeouts, and monitoring.
+ *   - Masks sensitive credentials in logs for security.
+ *   - Handles and logs connection errors with helpful hints.
+ *   - Exports functions to connect and disconnect from MongoDB.
+ *   - Provides helper functions for connection status and health checks.
+ *
+ * Functions:
+ *   - connectDB: Connects to MongoDB using environment variables and logs connection status.
+ *   - disconnectDB: Gracefully disconnects from MongoDB and logs status.
+ *   - isConnected: Returns true if Mongoose is connected to MongoDB.
+ *   - getConnectionInfo: Returns connection details (name, host, readyState).
+ *   - getDBHealth: Returns health status of the MongoDB connection (connected/disconnected/error).
+ *
+ * Usage:
+ *   Import and call connectDB() during server startup to establish a database connection.
+ *   Call disconnectDB() for graceful shutdown.
+ *   Use getDBHealth() in health check routes to monitor database status.
+ *
+ * Example:
+ *   import { connectDB, disconnectDB, getDBHealth } from "./config/db/db.config.js";
+ *   await connectDB();
+ *   // ... later, on shutdown
+ *   await disconnectDB();
+ *   // In a route handler:
+ *   const dbHealth = await getDBHealth();
+ *
+ * Dependencies:
+ *   - mongoose
+ */
+
 import mongoose from "mongoose";
 
 // 🔧 OPTIMIZED: Register event handlers only once
@@ -151,45 +189,45 @@ export const disconnectDB = async () => {
 };
 
 // 🔧 OPTIMIZED: Enhanced helper functions remain the same
-// export const isConnected = () => mongoose.connection.readyState === 1;
+export const isConnected = () => mongoose.connection.readyState === 1;
 
-// export const getConnectionInfo = () => {
-//     if (!isConnected()) {
-//         return { connected: false };
-//     }
+export const getConnectionInfo = () => {
+    if (!isConnected()) {
+        return { connected: false };
+    }
 
-//     return {
-//         connected: true,
-//         readyState: mongoose.connection.readyState,
-//         ...(process.env.NODE_ENV === "development" && {
-//             name: mongoose.connection.name,
-//             host: mongoose.connection.host?.replace(/^.*@/, "***@") || "hidden",
-//         }),
-//     };
-// };
+    return {
+        connected: true,
+        readyState: mongoose.connection.readyState,
+        ...(process.env.NODE_ENV === "development" && {
+            name: mongoose.connection.name,
+            host: mongoose.connection.host?.replace(/^.*@/, "***@") || "hidden",
+        }),
+    };
+};
 
-// export const getDBHealth = async () => {
-//     try {
-//         if (!isConnected()) {
-//             return { status: "disconnected", healthy: false };
-//         }
+export const getDBHealth = async () => {
+    try {
+        if (!isConnected()) {
+            return { status: "disconnected", healthy: false };
+        }
 
-//         await mongoose.connection.db.admin().ping();
+        await mongoose.connection.db.admin().ping();
 
-//         return {
-//             status: "connected",
-//             healthy: true,
-//             readyState: mongoose.connection.readyState,
-//             uptime: process.uptime(),
-//         };
-//     } catch (error) {
-//         return {
-//             status: "error",
-//             healthy: false,
-//             error:
-//                 process.env.NODE_ENV === "development"
-//                     ? error.message
-//                     : "Connection error",
-//         };
-//     }
-// };
+        return {
+            status: "connected",
+            healthy: true,
+            readyState: mongoose.connection.readyState,
+            uptime: process.uptime(),
+        };
+    } catch (error) {
+        return {
+            status: "error",
+            healthy: false,
+            error:
+                process.env.NODE_ENV === "development"
+                    ? error.message
+                    : "Connection error",
+        };
+    }
+};

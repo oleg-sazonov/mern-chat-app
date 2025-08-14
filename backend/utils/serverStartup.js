@@ -26,7 +26,7 @@ const logServerStartup = (PORT, NODE_ENV) => {
     console.log("=".repeat(60));
     console.log(`🚀 Server running on port: ${PORT}`);
     console.log(`📊 Environment: ${NODE_ENV}`);
-    // console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
     // console.log(
     //     `🛡️  Security: ${
     //         NODE_ENV === "production" ? "Production grade" : "Development mode"
