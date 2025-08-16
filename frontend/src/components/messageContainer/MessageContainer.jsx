@@ -1,6 +1,46 @@
+/**
+ * MessageContainer Component
+ * -------------------------
+ * Displays the chat messages and input area for the selected conversation.
+ *
+ * Exports:
+ *   - MessageContainer: Renders the chat header, messages, and input form.
+ *
+ * Props:
+ *   - selectedConversation: The currently selected conversation object (from Home).
+ *   - onBackClick: Callback to clear selection (used for mobile navigation).
+ *   - className: Additional classes for responsive width/layout.
+ *
+ * State:
+ *   - message: Stores the current input value for the message being typed.
+ *
+ * Functions:
+ *   - handleSubmit(e)
+ *     - Prevents default form submission.
+ *     - Logs the message and recipient (replace with API call in production).
+ *     - Clears the input after sending.
+ *
+ * Layout:
+ *   - If selectedConversation exists:
+ *       - Chat header with avatar, name, and online status.
+ *       - List of sample messages (replace with actual data).
+ *       - Message input form.
+ *   - If no conversation is selected:
+ *       - Shows a welcome message and prompt to select a conversation.
+ *
+ * Usage:
+ *   - Receives selectedConversation from Home.
+ *   - Handles message input and submission.
+ *   - Responsive and styled for glassmorphism chat UI.
+ */
+
 import { useState } from "react";
 
-const MessageContainer = ({ selectedConversation, onBackClick }) => {
+const MessageContainer = ({
+    selectedConversation,
+    onBackClick,
+    className = "",
+}) => {
     const [message, setMessage] = useState("");
 
     const handleSubmit = (e) => {
@@ -11,14 +51,16 @@ const MessageContainer = ({ selectedConversation, onBackClick }) => {
                 "Sending message:",
                 message,
                 "to:",
-                selectedConversation
+                selectedConversation?.name
             );
             setMessage(""); // Clear input after sending
         }
     };
 
     return (
-        <div className="flex-1 flex flex-col bg-white/5 backdrop-blur-md">
+        <div
+            className={`flex-1 flex flex-col bg-white/5 backdrop-blur-md ${className}`}
+        >
             {selectedConversation ? (
                 <>
                     {/* Chat header */}
@@ -45,16 +87,20 @@ const MessageContainer = ({ selectedConversation, onBackClick }) => {
                         <div className="avatar">
                             <div className="w-10 rounded-full bg-white/20">
                                 <img
-                                    src={`https://robohash.org/user${selectedConversation}.png`}
-                                    alt="avatar"
+                                    src={`https://robohash.org/user${selectedConversation.id}.png`}
+                                    alt={`${selectedConversation.name}'s avatar`}
                                 />
                             </div>
                         </div>
                         <div className="flex-1">
                             <h3 className="text-white font-medium">
-                                User {selectedConversation}
+                                {selectedConversation.name}
                             </h3>
-                            <p className="text-white/60 text-xs">Online</p>
+                            <p className="text-white/60 text-xs">
+                                {selectedConversation.isOnline
+                                    ? "Online"
+                                    : "Offline"}
+                            </p>
                         </div>
                     </div>
 
@@ -103,8 +149,8 @@ const MessageContainer = ({ selectedConversation, onBackClick }) => {
                                 </div>
                             </div>
                             <div className="chat-bubble bg-white/10 text-white">
-                                I'm doing well! Just working on a new project.
-                                It's a chat app built with the MERN stack.
+                                {selectedConversation?.lastMessage ||
+                                    "No message yet"}
                             </div>
                             <div className="chat-footer text-white/40 text-xs mt-1">
                                 10:36 AM
