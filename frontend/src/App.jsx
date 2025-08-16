@@ -7,8 +7,8 @@ function App() {
         <>
             <div className="p-4 h-screen flex items-center justify-center">
                 {/* <Home/> */}
-                {/* <Login /> */}
-                <SignUp />
+                <Login />
+                {/* <SignUp /> */}
             </div>
         </>
     );
