@@ -8,29 +8,29 @@
  *
  * Props:
  *   - users: Array of user objects to display in the sidebar.
- *   - onSelectConversation: Callback to update the selected conversation in Home.
- *   - selectedUserId: The id of the currently selected conversation (for highlighting).
+ *
+ * Context:
+ *   - selectedConversation: The currently selected conversation object, accessed via `useConversation`.
  *
  * Layout:
  *   - If users exist:
  *       - Maps each user to a SidebarConversation component.
- *       - Passes user data, selection state, and selection handler to SidebarConversation.
+ *       - Passes user data and selection state to SidebarConversation.
  *   - If no users:
  *       - Shows a "No users found" message.
  *
  * Usage:
- *   - Receives filtered users and selection state from Sidebar.
+ *   - Used within the `Sidebar` component to display the conversation list.
  *   - Handles user selection and highlights the active conversation.
- *   - Used within Sidebar for displaying the conversation list.
+ *   - Responsive and styled for glassmorphism chat UI.
  */
 
 import SidebarConversation from "./SidebarConversation";
+import { useConversation } from "../../hooks/useConversation";
 
-const SidebarConversations = ({
-    users,
-    onSelectConversation,
-    selectedUserId,
-}) => {
+const SidebarConversations = ({ users }) => {
+    const { selectedConversation } = useConversation();
+
     return (
         <div className="overflow-auto flex-1">
             {users.length > 0 ? (
@@ -39,8 +39,7 @@ const SidebarConversations = ({
                         <SidebarConversation
                             key={user.id}
                             user={user}
-                            isSelected={selectedUserId === user.id}
-                            onSelectConversation={onSelectConversation}
+                            isSelected={selectedConversation?.id === user.id}
                         />
                     ))}
                 </div>

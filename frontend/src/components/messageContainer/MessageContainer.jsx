@@ -35,13 +35,11 @@
  */
 
 import { useState } from "react";
+import { useConversation } from "../../hooks/useConversation";
 
-const MessageContainer = ({
-    selectedConversation,
-    onBackClick,
-    className = "",
-}) => {
+const MessageContainer = ({ className = "" }) => {
     const [message, setMessage] = useState("");
+    const { selectedConversation, setSelectedConversation } = useConversation();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -57,6 +55,10 @@ const MessageContainer = ({
         }
     };
 
+    const handleBackClick = () => {
+        setSelectedConversation(null);
+    };
+
     return (
         <div
             className={`flex-1 flex flex-col bg-white/5 backdrop-blur-md ${className}`}
@@ -65,9 +67,9 @@ const MessageContainer = ({
                 <>
                     {/* Chat header */}
                     <div className="p-4 border-b border-white/10 flex items-center gap-3">
-                        {onBackClick && (
+                        {window.innerWidth < 768 && (
                             <button
-                                onClick={onBackClick}
+                                onClick={handleBackClick}
                                 className="btn btn-circle btn-sm bg-white/10 border-white/20 text-white"
                             >
                                 <svg

@@ -8,12 +8,14 @@
  *
  * Props:
  *   - user: The user object containing id, name, lastMessage, unreadCount, etc.
- *   - isSelected: Boolean indicating if this conversation is currently selected.
- *   - onSelectConversation: Callback to update the selected conversation in Home.
+ *
+ * Context:
+ *   - selectedConversation: The currently selected conversation object, accessed via `useConversation`.
+ *   - handleSelectConversation: Function to update the selected conversation, accessed via `useConversation`.
  *
  * Functions:
- *   - handleSelect()
- *     - Invokes onSelectConversation with the full user object when the item is clicked.
+ *   - handleSelectConversation(user)
+ *     - Invokes the context function to update the selected conversation when the item is clicked.
  *
  * Layout:
  *   - Avatar: Displays user's profile picture with online indicator and ring if selected.
@@ -28,22 +30,19 @@
  */
 
 import { memo } from "react";
+import { useConversation } from "../../hooks/useConversation";
 
-const SidebarConversation = ({ user, isSelected, onSelectConversation }) => {
-    // Handle click with full user data
-    const handleSelect = () => {
-        onSelectConversation(user); // Pass the entire user object instead of just ID
-    };
+const SidebarConversation = ({ user }) => {
+    const { selectedConversation, handleSelectConversation } =
+        useConversation();
+    const isSelected = selectedConversation?.id === user.id;
+
     return (
         <div
             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer 
                 transition-all duration-300 ease-in-out transform
-                ${
-                    isSelected
-                        ? "border-white/30 shadow-md"
-                        : "hover:bg-white/5"
-                }`}
-            onClick={handleSelect}
+                ${isSelected ? "selected" : ""}`}
+            onClick={() => handleSelectConversation(user)}
         >
             <div className="avatar avatar-online transition-all duration-300 ease-in-out">
                 <div

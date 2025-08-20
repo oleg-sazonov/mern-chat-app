@@ -28,6 +28,7 @@
  *   - SidebarFooter: Current user info and menu.
  *
  * Usage:
+ *   - Used within the `Home` component to display the list of conversations and user info.
  *   - Receives onSelectConversation and selectedUserId from Home.
  *   - Passes filtered users and selection state to SidebarConversations.
  *   - Responsive and styled for glassmorphism chat UI.
@@ -38,11 +39,7 @@ import SidebarHeader from "./SidebarHeader";
 import SidebarConversations from "./SidebarConversations";
 import SidebarFooter from "./SidebarFooter";
 
-const Sidebar = ({
-    onSelectConversation,
-    selectedUserId,
-    className = "w-1/4",
-}) => {
+const Sidebar = ({ className = "w-1/4" }) => {
     const [filteredUsers, setFilteredUsers] = useState([]);
 
     // Sample data - replace with actual API call
@@ -106,11 +103,7 @@ const Sidebar = ({
             className={`${className} bg-white/10 backdrop-blur-md border-r border-white/10 flex flex-col`}
         >
             <SidebarHeader onSearch={handleSearch} />
-            <SidebarConversations
-                users={filteredUsers}
-                onSelectConversation={onSelectConversation}
-                selectedUserId={selectedUserId}
-            />
+            <SidebarConversations users={filteredUsers} />
             <SidebarFooter />
         </div>
     );
