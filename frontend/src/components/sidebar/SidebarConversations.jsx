@@ -23,12 +23,17 @@
  *   - Used within the `Sidebar` component to display the conversation list.
  *   - Handles user selection and highlights the active conversation.
  *   - Responsive and styled for glassmorphism chat UI.
+ *
+ * Example:
+ *   - Rendered in `Sidebar.jsx`:
+ *       <SidebarConversations users={filteredUsers} />
  */
 
-import SidebarConversation from "./SidebarConversation";
+import { memo } from "react";
+import SidebarConversation from "./conversation/SidebarConversation";
 import { useConversation } from "../../hooks/useConversation";
 
-const SidebarConversations = ({ users }) => {
+const SidebarConversations = memo(({ users }) => {
     const { selectedConversation } = useConversation();
 
     return (
@@ -50,6 +55,8 @@ const SidebarConversations = ({ users }) => {
             )}
         </div>
     );
-};
+});
+
+SidebarConversations.displayName = "SidebarConversations";
 
 export default SidebarConversations;
