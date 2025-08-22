@@ -36,6 +36,10 @@
  *   - Used within the `Home` component to display the selected conversation's messages and input area.
  *   - Manages message input and submission.
  *   - Responsive and styled for glassmorphism chat UI.
+ *
+ * Example:
+ *   - Rendered in `Home.jsx`:
+ *       <MessageContainer className="w-3/4" />
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -99,7 +103,13 @@ const MessageContainer = ({ className = "" }) => {
                         isMobile={isMobile}
                         onBackClick={handleBackClick}
                     />
-                    <MessagesList conversation={selectedConversation} />
+                    <MessagesList
+                        conversation={selectedConversation}
+                        // When I will implement the API, pass these:
+                        // messages={messagesData}
+                        // isLoading={isLoadingMessages}
+                        // error={messagesError}
+                    />
                     <MessageInput
                         message={message}
                         onChange={handleMessageChange}
