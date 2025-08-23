@@ -42,7 +42,7 @@ import {
     getMessageClass,
     getTimeClass,
     getBadgeClass,
-} from "./ConversationStyles";
+} from "../../../styles/ConversationStyles";
 
 const SidebarConversation = memo(({ user }) => {
     const { selectedConversation, handleSelectConversation } =

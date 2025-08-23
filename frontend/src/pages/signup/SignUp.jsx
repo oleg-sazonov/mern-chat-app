@@ -1,5 +1,41 @@
+/**
+ * SignUp Component
+ * -----------------
+ * Handles new user registration functionality.
+ *
+ * Exports:
+ *   - SignUp: Renders the signup form for new user registration.
+ *
+ * State:
+ *   - inputs: Stores form values (fullName, username, password, confirmPassword, gender).
+ *
+ * Functions:
+ *   - handleInputs(e): Updates the `inputs` state based on form changes.
+ *   - handleCheckboxChange(gender): Updates the gender selection in the `inputs` state.
+ *   - handleSubmit(e): Handles form submission (to be implemented).
+ *
+ * Layout:
+ *   - FormContainer: Wraps the signup form with a styled container.
+ *   - FormInput: Reusable input fields for full name, username, password, and confirm password.
+ *   - GenderCheckbox: Radio button group for gender selection.
+ *   - FormButton: Submit button for the signup form.
+ *   - FormFooter: Displays a link to the login page for existing users.
+ *
+ * Usage:
+ *   - This component is rendered in `App.jsx` as part of the `/signup` route.
+ *
+ * Example:
+ *   - Rendered in `App.jsx`:
+ *       <Route path="/signup" element={<SignUp />} />
+ */
+
 import { useState } from "react";
-import GenderCheckbox from "./GenderCheckbox";
+import { getInputWrapperClass } from "../../styles/AuthStyles";
+import FormContainer from "../../components/form/FormContainer";
+import FormInput from "../../components/form/FormInput";
+import FormButton from "../../components/form/FormButton";
+import FormFooter from "../../components/form/FormFooter";
+import GenderCheckbox from "../../components/form/GenderCheckbox";
 
 const SignUp = () => {
     const [inputs, setInputs] = useState({
@@ -19,94 +55,77 @@ const SignUp = () => {
         setInputs({ ...inputs, gender });
     };
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // SignUp logic will be implemented here
+        console.log("SignUp form submitted", inputs);
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-w-96 mx-auto">
-            <div className="w-full p-6 rounded-lg shadow-xl bg-white/10 backdrop-blur-md border border-white/20">
-                <h1 className="text-3xl font-semibold text-center text-white mb-6">
-                    Sign Up
-                </h1>
-
-                <form className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/90">
-                            Full Name
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="Enter your full name"
-                            className="input input-bordered w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:outline-none transition-colors"
-                            value={inputs.fullName}
-                            onChange={(e) => handleInputs(e)}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/90">
-                            Username
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="Enter username"
-                            className="input input-bordered w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:outline-none transition-colors"
-                            value={inputs.username}
-                            onChange={(e) => handleInputs(e)}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/90">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            placeholder="Enter password"
-                            className="input input-bordered w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:outline-none transition-colors"
-                            value={inputs.password}
-                            onChange={(e) => handleInputs(e)}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/90">
-                            Confirm Password
-                        </label>
-                        <input
-                            type="password"
-                            placeholder="Confirm your password"
-                            className="input input-bordered w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:outline-none transition-colors"
-                            value={inputs.confirmPassword}
-                            onChange={(e) => handleInputs(e)}
-                        />
-                    </div>
-
-                    <GenderCheckbox
-                        onCheckboxChange={handleCheckboxChange}
-                        selectedGender={inputs.gender}
+        <FormContainer title="Sign Up">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className={getInputWrapperClass()}>
+                    <FormInput
+                        id="fullName"
+                        name="fullName"
+                        label="Full Name"
+                        placeholder="Enter your full name"
+                        value={inputs.fullName}
+                        onChange={handleInputs}
                     />
-
-                    <div>
-                        <button
-                            type="submit"
-                            className="btn btn-block bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-sm transition-all duration-200"
-                        >
-                            Sign Up
-                        </button>
-                    </div>
-                </form>
-
-                <div className="text-center mt-6">
-                    <span className="text-white/70 text-sm">
-                        Already have an account?{" "}
-                        <a
-                            href="#"
-                            className="text-white hover:text-white/80 underline font-medium"
-                        >
-                            Login
-                        </a>
-                    </span>
                 </div>
-            </div>
-        </div>
+
+                <div className={getInputWrapperClass()}>
+                    <FormInput
+                        id="username"
+                        name="username"
+                        label="Username"
+                        placeholder="Enter username"
+                        value={inputs.username}
+                        onChange={handleInputs}
+                    />
+                </div>
+
+                <div className={getInputWrapperClass()}>
+                    <FormInput
+                        id="password"
+                        name="password"
+                        type="password"
+                        label="Password"
+                        placeholder="Enter password"
+                        value={inputs.password}
+                        onChange={handleInputs}
+                    />
+                </div>
+
+                <div className={getInputWrapperClass()}>
+                    <FormInput
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        label="Confirm Password"
+                        placeholder="Confirm your password"
+                        value={inputs.confirmPassword}
+                        onChange={handleInputs}
+                    />
+                </div>
+
+                <GenderCheckbox
+                    onCheckboxChange={handleCheckboxChange}
+                    selectedGender={inputs.gender}
+                />
+
+                <div>
+                    <FormButton>Sign Up</FormButton>
+                </div>
+            </form>
+
+            <FormFooter
+                text="Already have an account?"
+                linkText="Login"
+                linkHref="/login"
+            />
+        </FormContainer>
     );
 };
 

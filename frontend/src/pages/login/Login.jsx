@@ -1,4 +1,38 @@
+/**
+ * Login Component
+ * --------------
+ * Handles user login functionality.
+ *
+ * Exports:
+ *   - Login: Renders the login form for user authentication.
+ *
+ * State:
+ *   - inputs: Stores form values (username and password).
+ *
+ * Functions:
+ *   - handleInputs(e): Updates the `inputs` state based on form changes.
+ *   - handleSubmit(e): Handles form submission (to be implemented).
+ *
+ * Layout:
+ *   - FormContainer: Wraps the login form with a styled container.
+ *   - FormInput: Reusable input fields for username and password.
+ *   - FormButton: Submit button for the login form.
+ *   - FormFooter: Displays a link to the signup page for new users.
+ *
+ * Usage:
+ *   - This component is rendered in `App.jsx` as part of the `/login` route.
+ *
+ * Example:
+ *   - Rendered in `App.jsx`:
+ *       <Route path="/login" element={<Login />} />
+ */
+
 import { useState } from "react";
+import { getInputWrapperClass } from "../../styles/AuthStyles";
+import FormContainer from "../../components/form/FormContainer";
+import FormInput from "../../components/form/FormInput";
+import FormButton from "../../components/form/FormButton";
+import FormFooter from "../../components/form/FormFooter";
 
 const Login = () => {
     const [inputs, setInputs] = useState({
@@ -11,65 +45,55 @@ const Login = () => {
         setInputs({ ...inputs, [name]: value });
     };
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Login logic will be implemented here
+        console.log("Login form submitted", inputs);
+        // Reset form
+        setInputs({
+            username: "",
+            password: "",
+        });
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-w-96 mx-auto">
-            <div className="w-full p-6 rounded-lg shadow-xl bg-white/10 backdrop-blur-md border border-white/20">
-                <h1 className="text-3xl font-semibold text-center text-white mb-6">
-                    Login
-                </h1>
-
-                <form className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/90">
-                            Username
-                        </label>
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Enter username"
-                            className="input input-bordered w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:outline-none transition-colors"
-                            value={inputs.username}
-                            onChange={handleInputs}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white/90">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Enter password"
-                            className="input input-bordered w-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:outline-none transition-colors"
-                            value={inputs.password}
-                            onChange={handleInputs}
-                        />
-                    </div>
-
-                    <div>
-                        <button
-                            type="submit"
-                            className="btn btn-block bg-white/20 hover:bg-white/30 border border-white/30 text-white backdrop-blur-sm transition-all duration-200"
-                        >
-                            Login
-                        </button>
-                    </div>
-                </form>
-
-                <div className="text-center mt-6">
-                    <span className="text-white/70 text-sm">
-                        Don't have an account?{" "}
-                        <a
-                            href="#"
-                            className="text-white hover:text-white/80 underline font-medium"
-                        >
-                            Sign up
-                        </a>
-                    </span>
+        <FormContainer title="Login">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className={getInputWrapperClass()}>
+                    <FormInput
+                        id="username"
+                        name="username"
+                        type="text"
+                        label="Username"
+                        placeholder="Enter username"
+                        value={inputs.username}
+                        onChange={handleInputs}
+                    />
                 </div>
-            </div>
-        </div>
+
+                <div className={getInputWrapperClass()}>
+                    <FormInput
+                        id="password"
+                        name="password"
+                        type="password"
+                        label="Password"
+                        placeholder="Enter password"
+                        value={inputs.password}
+                        onChange={handleInputs}
+                    />
+                </div>
+
+                <div className="mt-6">
+                    <FormButton>Login</FormButton>
+                </div>
+            </form>
+
+            <FormFooter
+                text="Don't have an account?"
+                linkText="Sign up"
+                linkHref="/signup"
+            />
+        </FormContainer>
     );
 };
 

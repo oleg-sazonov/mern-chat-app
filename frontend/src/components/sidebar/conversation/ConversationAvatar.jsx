@@ -25,7 +25,10 @@
  */
 
 import { memo } from "react";
-import { getAvatarClass, getAvatarContainerClass } from "./ConversationStyles";
+import {
+    getAvatarClass,
+    getAvatarContainerClass,
+} from "../../../styles/ConversationStyles";
 
 const ConversationAvatar = memo(({ user, isSelected, isOnline = true }) => {
     if (!user) return null;

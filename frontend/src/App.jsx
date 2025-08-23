@@ -9,7 +9,7 @@
  * Layout:
  *   - Wraps the application with the ConversationProvider to provide global state for conversations.
  *   - Renders the Home component as the default page.
- *   - Includes commented-out Login and SignUp components for potential use.
+ *   - Includes Login and SignUp components for authentication routes.
  *
  * Usage:
  *   - This component is rendered in `frontend/src/main.jsx` and serves as the root of the React app.
@@ -18,8 +18,8 @@
  * Components:
  *   - ConversationProvider: Provides conversation-related state and functions to the app.
  *   - Home: The main chat interface.
- *   - Login (commented): Placeholder for the login page.
- *   - SignUp (commented): Placeholder for the signup page.
+ *   - Login: The login page for user authentication.
+ *   - SignUp: The signup page for new user registration.
  *
  * Props Passed:
  *   - None directly, but the ConversationProvider wraps the app to provide context.
@@ -29,6 +29,7 @@
  *       <App />
  */
 
+import { Routes, Route } from "react-router-dom";
 import { ConversationProvider } from "./context/ConversationContext";
 
 import Home from "./pages/home/Home";
@@ -39,9 +40,11 @@ function App() {
     return (
         <ConversationProvider>
             <div className="p-4 h-screen flex items-center justify-center">
-                <Home />
-                {/* <Login /> */}
-                {/* <SignUp /> */}
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<SignUp />} />
+                </Routes>
             </div>
         </ConversationProvider>
     );
