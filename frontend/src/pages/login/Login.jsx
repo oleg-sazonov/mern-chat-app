@@ -14,6 +14,7 @@
  *   - handleSubmit(e): Handles form submission (to be implemented).
  *
  * Layout:
+ *   - PageTransition: Wraps the login form with smooth animations for route transitions.
  *   - FormContainer: Wraps the login form with a styled container.
  *   - FormInput: Reusable input fields for username and password.
  *   - FormButton: Submit button for the login form.
@@ -33,6 +34,7 @@ import FormContainer from "../../components/form/FormContainer";
 import FormInput from "../../components/form/FormInput";
 import FormButton from "../../components/form/FormButton";
 import FormFooter from "../../components/form/FormFooter";
+import PageTransition from "../../components/transitions/PageTransition";
 
 const Login = () => {
     const [inputs, setInputs] = useState({
@@ -57,43 +59,45 @@ const Login = () => {
     };
 
     return (
-        <FormContainer title="Login">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-                <div className={getInputWrapperClass()}>
-                    <FormInput
-                        id="username"
-                        name="username"
-                        type="text"
-                        label="Username"
-                        placeholder="Enter username"
-                        value={inputs.username}
-                        onChange={handleInputs}
-                    />
-                </div>
+        <PageTransition type="auth">
+            <FormContainer title="Login">
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    <div className={getInputWrapperClass()}>
+                        <FormInput
+                            id="username"
+                            name="username"
+                            type="text"
+                            label="Username"
+                            placeholder="Enter username"
+                            value={inputs.username}
+                            onChange={handleInputs}
+                        />
+                    </div>
 
-                <div className={getInputWrapperClass()}>
-                    <FormInput
-                        id="password"
-                        name="password"
-                        type="password"
-                        label="Password"
-                        placeholder="Enter password"
-                        value={inputs.password}
-                        onChange={handleInputs}
-                    />
-                </div>
+                    <div className={getInputWrapperClass()}>
+                        <FormInput
+                            id="password"
+                            name="password"
+                            type="password"
+                            label="Password"
+                            placeholder="Enter password"
+                            value={inputs.password}
+                            onChange={handleInputs}
+                        />
+                    </div>
 
-                <div className="mt-6">
-                    <FormButton>Login</FormButton>
-                </div>
-            </form>
+                    <div className="mt-6">
+                        <FormButton>Login</FormButton>
+                    </div>
+                </form>
 
-            <FormFooter
-                text="Don't have an account?"
-                linkText="Sign up"
-                linkHref="/signup"
-            />
-        </FormContainer>
+                <FormFooter
+                    text="Don't have an account?"
+                    linkText="Sign up"
+                    linkHref="/signup"
+                />
+            </FormContainer>
+        </PageTransition>
     );
 };
 

@@ -15,6 +15,7 @@
  *   - handleSubmit(e): Handles form submission (to be implemented).
  *
  * Layout:
+ *   - PageTransition: Wraps the signup form with smooth animations for route transitions.
  *   - FormContainer: Wraps the signup form with a styled container.
  *   - FormInput: Reusable input fields for full name, username, password, and confirm password.
  *   - GenderCheckbox: Radio button group for gender selection.
@@ -36,6 +37,7 @@ import FormInput from "../../components/form/FormInput";
 import FormButton from "../../components/form/FormButton";
 import FormFooter from "../../components/form/FormFooter";
 import GenderCheckbox from "../../components/form/GenderCheckbox";
+import PageTransition from "../../components/transitions/PageTransition";
 
 const SignUp = () => {
     const [inputs, setInputs] = useState({
@@ -59,73 +61,83 @@ const SignUp = () => {
         e.preventDefault();
         // SignUp logic will be implemented here
         console.log("SignUp form submitted", inputs);
+        // Reset form
+        setInputs({
+            fullName: "",
+            username: "",
+            password: "",
+            confirmPassword: "",
+            gender: "",
+        });
     };
 
     return (
-        <FormContainer title="Sign Up">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-                <div className={getInputWrapperClass()}>
-                    <FormInput
-                        id="fullName"
-                        name="fullName"
-                        label="Full Name"
-                        placeholder="Enter your full name"
-                        value={inputs.fullName}
-                        onChange={handleInputs}
-                    />
-                </div>
+        <PageTransition type="auth">
+            <FormContainer title="Sign Up">
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    <div className={getInputWrapperClass()}>
+                        <FormInput
+                            id="fullName"
+                            name="fullName"
+                            label="Full Name"
+                            placeholder="Enter your full name"
+                            value={inputs.fullName}
+                            onChange={handleInputs}
+                        />
+                    </div>
 
-                <div className={getInputWrapperClass()}>
-                    <FormInput
-                        id="username"
-                        name="username"
-                        label="Username"
-                        placeholder="Enter username"
-                        value={inputs.username}
-                        onChange={handleInputs}
-                    />
-                </div>
+                    <div className={getInputWrapperClass()}>
+                        <FormInput
+                            id="username"
+                            name="username"
+                            label="Username"
+                            placeholder="Enter username"
+                            value={inputs.username}
+                            onChange={handleInputs}
+                        />
+                    </div>
 
-                <div className={getInputWrapperClass()}>
-                    <FormInput
-                        id="password"
-                        name="password"
-                        type="password"
-                        label="Password"
-                        placeholder="Enter password"
-                        value={inputs.password}
-                        onChange={handleInputs}
-                    />
-                </div>
+                    <div className={getInputWrapperClass()}>
+                        <FormInput
+                            id="password"
+                            name="password"
+                            type="password"
+                            label="Password"
+                            placeholder="Enter password"
+                            value={inputs.password}
+                            onChange={handleInputs}
+                        />
+                    </div>
 
-                <div className={getInputWrapperClass()}>
-                    <FormInput
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        label="Confirm Password"
-                        placeholder="Confirm your password"
-                        value={inputs.confirmPassword}
-                        onChange={handleInputs}
-                    />
-                </div>
+                    <div className={getInputWrapperClass()}>
+                        <FormInput
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            label="Confirm Password"
+                            placeholder="Confirm your password"
+                            value={inputs.confirmPassword}
+                            onChange={handleInputs}
+                        />
+                    </div>
 
-                <GenderCheckbox
-                    onCheckboxChange={handleCheckboxChange}
-                    selectedGender={inputs.gender}
+                    <GenderCheckbox
+                        onCheckboxChange={handleCheckboxChange}
+                        selectedGender={inputs.gender}
+                    />
+
+                    <div>
+                        <FormButton>Sign Up</FormButton>
+                    </div>
+                </form>
+
+                <FormFooter
+                    text="Already have an account?"
+                    linkText="Login"
+                    linkHref="/login"
                 />
-
-                <div>
-                    <FormButton>Sign Up</FormButton>
-                </div>
-            </form>
-
-            <FormFooter
-                text="Already have an account?"
-                linkText="Login"
-                linkHref="/login"
-            />
-        </FormContainer>
+            </FormContainer>
+        </PageTransition>
     );
 };
 

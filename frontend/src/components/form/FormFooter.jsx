@@ -18,6 +18,7 @@
  *
  * Usage:
  *   - Used in authentication forms like `Login` and `SignUp` to display navigation links.
+ *   - This component is rendered in `App.jsx` as part of the `/login` and `/signup` routes.
  *
  * Example:
  *   - Rendered in `SignUp.jsx`:
@@ -36,18 +37,19 @@
  */
 
 import { getFooterClass } from "../../styles/AuthStyles";
+import AnimatedLink from "../transitions/AnimatedLink";
 
 const FormFooter = ({ text, linkText, linkHref }) => {
     return (
         <div className={getFooterClass()}>
             <span className="text-white/70 text-sm">
                 {text}{" "}
-                <a
-                    href={linkHref}
+                <AnimatedLink
+                    to={linkHref}
                     className="text-white hover:text-white/80 underline font-medium"
                 >
                     {linkText}
-                </a>
+                </AnimatedLink>
             </span>
         </div>
     );
