@@ -12,7 +12,7 @@
  * Functions:
  *   - handleInputs(e): Updates the `inputs` state based on form changes.
  *   - handleCheckboxChange(gender): Updates the gender selection in the `inputs` state.
- *   - handleSubmit(e): Handles form submission (to be implemented).
+ *   - handleSubmit(e): Handles form submission using the `useSignup` hook.
  *
  * Layout:
  *   - PageTransition: Wraps the signup form with smooth animations for route transitions.
@@ -24,6 +24,7 @@
  *
  * Usage:
  *   - This component is rendered in `App.jsx` as part of the `/signup` route.
+ *   - Manages form state and submission using the `useSignup` hook.
  *
  * Example:
  *   - Rendered in `App.jsx`:
@@ -31,6 +32,7 @@
  */
 
 import { useState } from "react";
+import { useSignup } from "../../hooks/auth/useSignup";
 import { getInputWrapperClass } from "../../styles/AuthStyles";
 import FormContainer from "../../components/form/FormContainer";
 import FormInput from "../../components/form/FormInput";
@@ -48,6 +50,8 @@ const SignUp = () => {
         gender: "",
     });
 
+    const { loading, handleSignup } = useSignup();
+
     const handleInputs = (e) => {
         const { name, value } = e.target;
         setInputs({ ...inputs, [name]: value });
@@ -57,18 +61,29 @@ const SignUp = () => {
         setInputs({ ...inputs, gender });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // SignUp logic will be implemented here
-        console.log("SignUp form submitted", inputs);
-        // Reset form
-        setInputs({
-            fullName: "",
-            username: "",
-            password: "",
-            confirmPassword: "",
-            gender: "",
+
+        if (loading) return; // Prevent multiple submissions while loading
+
+        await handleSignup({
+            fullName: inputs.fullName,
+            username: inputs.username,
+            password: inputs.password,
+            confirmPassword: inputs.confirmPassword,
+            gender: inputs.gender,
         });
+
+        console.log("SignUp form submitted", inputs);
+
+        // Reset form
+        // setInputs({
+        //     fullName: "",
+        //     username: "",
+        //     password: "",
+        //     confirmPassword: "",
+        //     gender: "",
+        // });
     };
 
     return (

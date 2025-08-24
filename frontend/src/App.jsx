@@ -14,6 +14,7 @@
  *   - Uses AnimatePresence from Framer Motion to enable smooth page transitions.
  *   - Renders the Home component as the default page.
  *   - Includes Login and SignUp components for authentication routes.
+ *   - Displays toast notifications using the Toaster component from react-hot-toast.
  *
  * Components:
  *   - ConversationProvider: Provides conversation-related state and functions to the app.
@@ -22,6 +23,7 @@
  *   - Home: The main chat interface.
  *   - Login: The login page for user authentication.
  *   - SignUp: The signup page for new user registration.
+ *   - Toaster: Displays toast notifications with a dark theme.
  *
  * Usage:
  *   - This component is rendered in `frontend/src/main.jsx` and serves as the root of the React app.
@@ -35,6 +37,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { ConversationProvider } from "./context/ConversationContext";
+import { Toaster } from "react-hot-toast";
 
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
@@ -52,6 +55,16 @@ function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<SignUp />} />
                     </Routes>
+                    <Toaster
+                        position="top-center"
+                        toastOptions={{
+                            style: {
+                                borderRadius: "10px",
+                                background: "#333",
+                                color: "#fff",
+                            },
+                        }}
+                    />
                 </AnimatePresence>
             </div>
         </ConversationProvider>

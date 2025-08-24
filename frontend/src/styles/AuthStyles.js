@@ -71,8 +71,22 @@ export const getFooterClass = () => `
 export const getLabelClass = () => `text-sm font-medium text-white/90`;
 
 /**
+ * Returns the class for input fields with errors.
+ */
+export const getInputErrorClass = () => `
+  border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 bg-red-50/10
+`;
+
+/**
  * Returns the class for form validation errors.
  */
 export const getErrorMessageClass = () => `
-  text-red-500 text-xs mt-1
+  text-red-400 text-xs mt-1
+`;
+
+/**
+ * Returns the class for a disabled button.
+ */
+export const getDisabledButtonClass = () => `
+  opacity-50 cursor-not-allowed bg-gray-400 border-gray-500 hover:bg-gray-400
 `;
