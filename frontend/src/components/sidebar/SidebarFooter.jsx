@@ -11,12 +11,31 @@
  *   - User Info: Displays the user's name ("You") and online status.
  *   - Dropdown Menu: Provides quick access to Profile, Settings, and Logout actions.
  *
+ * Props:
+ *   - None
+ *
+ * Context:
+ *   - useLogout: Provides the `handleLogout` function and `loading` state for managing user logout functionality.
+ *
+ * Functions:
+ *   - handleLogout: Triggered when the "Logout" option is clicked. Logs the user out and updates the authentication state.
+ *
  * Usage:
  *   - Used at the bottom of the Sidebar for persistent user info and actions.
  *   - Responsive and styled for glassmorphism chat UI.
+ *
+ * Example:
+ *   - Rendered in `Home.jsx` as part of the Sidebar component:
+ *       <SidebarFooter />
+ *
+ * Related Components:
+ *   - Referenced in `Home.jsx` to manage user authentication state and logout functionality.
  */
 
+import useLogout from "../../hooks/auth/useLogout";
+
 const SidebarFooter = () => {
+    const { loading, handleLogout } = useLogout();
     return (
         <div className="mt-auto border-t border-white/10 p-4 flex items-center">
             <div className="avatar">
@@ -55,7 +74,17 @@ const SidebarFooter = () => {
                         <a className="text-white hover:bg-white/10">Settings</a>
                     </li>
                     <li>
-                        <a className="text-white hover:bg-white/10">Logout</a>
+                        {loading ? (
+                            <span className="loading loading-spinner loading-xs"></span>
+                        ) : (
+                            <a
+                                className="text-white hover:bg-white/10"
+                                onClick={handleLogout}
+                                disabled={loading}
+                            >
+                                Logout
+                            </a>
+                        )}
                     </li>
                 </ul>
             </div>
