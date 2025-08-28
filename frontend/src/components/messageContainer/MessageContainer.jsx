@@ -43,7 +43,7 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
-import { useConversation } from "../../hooks/useConversation";
+import { useConversation } from "../../context/ConversationContext";
 import ChatHeader from "./ChatHeader";
 import MessagesList from "./MessagesList";
 import MessageInput from "./MessageInput";

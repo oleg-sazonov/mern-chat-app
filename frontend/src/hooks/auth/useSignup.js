@@ -20,6 +20,7 @@
  *       - Displays a loading toast while the request is in progress.
  *       - Displays a success toast on successful signup.
  *       - Displays an error toast if the signup fails.
+ *       - Stores the user data in localStorage and updates the authentication context.
  *
  * Layout:
  *   - Loading Toast: Displays "Signing up..." while the request is in progress.
@@ -40,18 +41,16 @@
  *           confirmPassword: "password123",
  *           gender: "male",
  *       });
+ *
+ * Related Components:
+ *   - Referenced in `Home.jsx` for managing user authentication state after signup.
  */
 
 import { useState } from "react";
-import toast from "react-hot-toast";
 
-const toasterDark = {
-    style: {
-        borderRadius: "10px",
-        background: "#333",
-        color: "#fff",
-    },
-};
+import { showToast, dismissToast } from "../../utils/toastConfig";
+import { setStorageItem } from "../../utils/storage";
+import { useAuthContext } from "../../context/AuthContext";
 
 const handleInputErrors = async ({
     fullName,
@@ -62,15 +61,15 @@ const handleInputErrors = async ({
 }) => {
     // Perform input validation and return true if valid, false otherwise
     if (!fullName || !username || !password || !confirmPassword || !gender) {
-        toast.error("Please fill in all fields", toasterDark);
+        showToast.error("All fields are required");
         return false;
     }
     if (password !== confirmPassword) {
-        toast.error("Passwords do not match", toasterDark);
+        showToast.error("Passwords do not match");
         return false;
     }
     if (password.length < 6) {
-        toast.error("Password must be at least 6 characters", toasterDark);
+        showToast.error("Password must be at least 6 characters");
         return false;
     }
     return true;
@@ -78,6 +77,7 @@ const handleInputErrors = async ({
 
 export const useSignup = () => {
     const [loading, setLoading] = useState(false);
+    const { setAuthUser } = useAuthContext();
 
     const handleSignup = async ({
         fullName,
@@ -99,7 +99,7 @@ export const useSignup = () => {
         setLoading(true);
 
         // Show loading toast
-        const loadingToastId = toast.loading("Signing up...", toasterDark);
+        const loadingToastId = showToast.loading("Signing up...");
 
         try {
             const res = await fetch("/api/auth/signup", {
@@ -116,26 +116,34 @@ export const useSignup = () => {
                 }),
             });
 
-            const data = await res.json();
-
             if (!res.ok) {
                 throw new Error(data.message || "Signup failed");
             }
 
+            const data = await res.json();
+
+            const userToStore = {
+                id: data.user._id,
+                username: data.user.username,
+                fullName: data.user.fullName,
+            };
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            if (res.ok) {
+                setStorageItem("user", userToStore);
+                setAuthUser(userToStore);
+            }
+
             // Dismiss loading toast and show success toast
-            toast.dismiss(loadingToastId);
-            toast.success("Signup successful!", {
-                icon: "👏",
-                style: {
-                    borderRadius: "10px",
-                    background: "#333",
-                    color: "#fff",
-                },
-            });
+            dismissToast(loadingToastId);
+            showToast.success("Signup successful!");
         } catch (error) {
             // Dismiss loading toast and show error toast
-            toast.dismiss(loadingToastId);
-            toast.error("Signup failed with " + error.message, toasterDark);
+            dismissToast(loadingToastId);
+            showToast.error("Signup failed with " + error.message);
         } finally {
             setLoading(false);
         }

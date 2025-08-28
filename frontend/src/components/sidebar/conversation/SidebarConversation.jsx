@@ -33,7 +33,7 @@
  */
 
 import { memo, useCallback } from "react";
-import { useConversation } from "../../../hooks/useConversation";
+import { useConversation } from "../../../context/ConversationContext";
 import { formatMessageTime } from "../../../utils/dateUtils";
 import ConversationAvatar from "./ConversationAvatar";
 import {

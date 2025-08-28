@@ -31,7 +31,7 @@
 
 import { memo } from "react";
 import SidebarConversation from "./conversation/SidebarConversation";
-import { useConversation } from "../../hooks/useConversation";
+import { useConversation } from "../../context/ConversationContext";
 
 const SidebarConversations = memo(({ users }) => {
     const { selectedConversation } = useConversation();

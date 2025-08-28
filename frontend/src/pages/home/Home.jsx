@@ -35,7 +35,7 @@
  */
 
 import { useEffect } from "react";
-import { useConversation } from "../../hooks/useConversation";
+import { useConversation } from "../../context/ConversationContext";
 import Sidebar from "../../components/sidebar/Sidebar";
 import MessageContainer from "../../components/messageContainer/MessageContainer";
 import {
