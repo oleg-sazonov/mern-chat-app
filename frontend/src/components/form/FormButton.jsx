@@ -14,6 +14,7 @@
  *
  * Layout:
  *   - Renders a button element with dynamic classes and content.
+ *   - Displays a loading spinner when the button is disabled.
  *   - Applies styles from `getButtonClass` and any additional classes passed via `className`.
  *
  * Usage:
@@ -25,6 +26,9 @@
  *
  *   - Rendered in `Login.jsx`:
  *       <FormButton disabled={!isValid}>Login</FormButton>
+ *
+ * Related Components:
+ *   - Referenced in `Home.jsx` for managing form submissions in the chat application.
  */
 
 import { getButtonClass } from "../../styles/AuthStyles";
@@ -39,9 +43,13 @@ const FormButton = ({
         <button
             type={type}
             disabled={disabled}
-            className={`${getButtonClass()} ${className}`}
+            className={`${getButtonClass()} ${className} flex items-center justify-center`}
         >
-            {children}
+            {disabled ? (
+                <span className="loading loading-spinner loading-md"></span>
+            ) : (
+                children
+            )}
         </button>
     );
 };

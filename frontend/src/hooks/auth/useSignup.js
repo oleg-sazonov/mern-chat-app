@@ -10,12 +10,8 @@
  *   - loading: Boolean indicating whether the signup request is in progress.
  *
  * Functions:
- *   - handleInputErrors:
- *       - Validates the signup form inputs.
- *       - Displays error messages using toast notifications for invalid inputs.
- *       - Returns `true` if inputs are valid, otherwise `false`.
  *   - handleSignup:
- *       - Validates inputs using `handleInputErrors`.
+ *       - Validates inputs using `validateAuthInputs`.
  *       - Sends a POST request to the `/api/auth/signup` endpoint with the user data.
  *       - Displays a loading toast while the request is in progress.
  *       - Displays a success toast on successful signup.
@@ -51,29 +47,7 @@ import { useState } from "react";
 import { showToast, dismissToast } from "../../utils/toastConfig";
 import { setStorageItem } from "../../utils/storage";
 import { useAuthContext } from "../../context/AuthContext";
-
-const handleInputErrors = async ({
-    fullName,
-    username,
-    password,
-    confirmPassword,
-    gender,
-}) => {
-    // Perform input validation and return true if valid, false otherwise
-    if (!fullName || !username || !password || !confirmPassword || !gender) {
-        showToast.error("All fields are required");
-        return false;
-    }
-    if (password !== confirmPassword) {
-        showToast.error("Passwords do not match");
-        return false;
-    }
-    if (password.length < 6) {
-        showToast.error("Password must be at least 6 characters");
-        return false;
-    }
-    return true;
-};
+import { validateAuthInputs } from "../../utils/validationUtils";
 
 export const useSignup = () => {
     const [loading, setLoading] = useState(false);
@@ -86,7 +60,7 @@ export const useSignup = () => {
         confirmPassword,
         gender,
     }) => {
-        const success = await handleInputErrors({
+        const isValid = await validateAuthInputs({
             fullName,
             username,
             password,
@@ -94,7 +68,7 @@ export const useSignup = () => {
             gender,
         });
 
-        if (!success) return;
+        if (!isValid) return;
 
         setLoading(true);
 
@@ -116,26 +90,19 @@ export const useSignup = () => {
                 }),
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
                 throw new Error(data.message || "Signup failed");
             }
 
-            const data = await res.json();
-
             const userToStore = {
                 id: data.user._id,
                 username: data.user.username,
-                fullName: data.user.fullName,
             };
 
-            if (data.error) {
-                throw new Error(data.error);
-            }
-
-            if (res.ok) {
-                setStorageItem("user", userToStore);
-                setAuthUser(userToStore);
-            }
+            setStorageItem("user", userToStore);
+            setAuthUser(userToStore);
 
             // Dismiss loading toast and show success toast
             dismissToast(loadingToastId);

@@ -11,7 +11,7 @@
  *
  * Functions:
  *   - handleInputs(e): Updates the `inputs` state based on form changes.
- *   - handleSubmit(e): Handles form submission (to be implemented).
+ *   - handleSubmit(e): Handles form submission using the `useLogin` hook.
  *
  * Layout:
  *   - PageTransition: Wraps the login form with smooth animations for route transitions.
@@ -22,14 +22,21 @@
  *
  * Usage:
  *   - This component is rendered in `App.jsx` as part of the `/login` route.
+ *   - Manages user authentication state using the `useLogin` hook.
  *
  * Example:
  *   - Rendered in `App.jsx`:
  *       <Route path="/login" element={<Login />} />
+ *
+ * Related Components:
+ *   - Referenced in `Home.jsx` to manage user authentication state and navigation.
  */
 
 import { useState } from "react";
+
+import useLogin from "../../hooks/auth/useLogin";
 import { getInputWrapperClass } from "../../styles/AuthStyles";
+
 import FormContainer from "../../components/form/FormContainer";
 import FormInput from "../../components/form/FormInput";
 import FormButton from "../../components/form/FormButton";
@@ -41,20 +48,22 @@ const Login = () => {
         username: "",
         password: "",
     });
+    const { loading, handleLogin } = useLogin();
 
     const handleInputs = (e) => {
         const { name, value } = e.target;
         setInputs({ ...inputs, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (loading) return; // Prevent multiple submissions while loading
+
         // Login logic will be implemented here
-        console.log("Login form submitted", inputs);
-        // Reset form
-        setInputs({
-            username: "",
-            password: "",
+        await handleLogin({
+            username: inputs.username,
+            password: inputs.password,
         });
     };
 
@@ -87,7 +96,7 @@ const Login = () => {
                     </div>
 
                     <div className="mt-6">
-                        <FormButton>Login</FormButton>
+                        <FormButton disabled={loading}>Login</FormButton>
                     </div>
                 </form>
 

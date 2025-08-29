@@ -73,17 +73,6 @@ const SignUp = () => {
             confirmPassword: inputs.confirmPassword,
             gender: inputs.gender,
         });
-
-        console.log("SignUp form submitted", inputs);
-
-        // Reset form
-        // setInputs({
-        //     fullName: "",
-        //     username: "",
-        //     password: "",
-        //     confirmPassword: "",
-        //     gender: "",
-        // });
     };
 
     return (
@@ -142,7 +131,7 @@ const SignUp = () => {
                     />
 
                     <div>
-                        <FormButton>Sign Up</FormButton>
+                        <FormButton disabled={loading}>Sign Up</FormButton>
                     </div>
                 </form>
 

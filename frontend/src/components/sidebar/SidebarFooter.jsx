@@ -77,13 +77,13 @@ const SidebarFooter = () => {
                         {loading ? (
                             <span className="loading loading-spinner loading-xs"></span>
                         ) : (
-                            <a
-                                className="text-white hover:bg-white/10"
+                            <button
+                                className="text-white hover:bg-white/10 w-full text-left"
                                 onClick={handleLogout}
                                 disabled={loading}
                             >
                                 Logout
-                            </a>
+                            </button>
                         )}
                     </li>
                 </ul>
