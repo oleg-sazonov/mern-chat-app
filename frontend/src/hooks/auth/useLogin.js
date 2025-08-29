@@ -18,10 +18,13 @@
  *       - Displays an error toast if the login fails.
  *       - Stores the user data in localStorage and updates the authentication context.
  *
- * Layout:
- *   - Loading Toast: Displays "Logging in..." while the request is in progress.
- *   - Success Toast: Displays "Login successful!" on successful login.
- *   - Error Toast: Displays the error message if the login fails.
+ * Parameters:
+ *   - username (string): The username entered by the user.
+ *   - password (string): The password entered by the user.
+ *
+ * Returns:
+ *   - handleLogin: Function to initiate the login process.
+ *   - loading: Boolean indicating whether the login request is in progress.
  *
  * Usage:
  *   - This hook is used in the `Login` component to handle form submission.
@@ -34,9 +37,6 @@
  *           username: "johndoe",
  *           password: "password123",
  *       });
- *
- * Related Components:
- *   - Referenced in `Home.jsx` for managing user authentication state after login.
  */
 
 import { useState } from "react";
@@ -45,6 +45,7 @@ import { showToast, dismissToast } from "../../utils/toastConfig";
 import { setStorageItem } from "../../utils/storage";
 import { useAuthContext } from "../../context/AuthContext";
 import { validateAuthInputs } from "../../utils/validationUtils";
+import { apiRequest } from "../../utils/apiUtils";
 
 const useLogin = () => {
     const [loading, setLoading] = useState(false);
@@ -60,19 +61,10 @@ const useLogin = () => {
         // Show loading toast
         const loadingToastId = showToast.loading("Logging in...");
         try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, password }),
+            const data = await apiRequest("/api/auth/login", "POST", {
+                username,
+                password,
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Login failed");
-            }
 
             const userToStore = {
                 id: data.user._id,

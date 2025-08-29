@@ -48,6 +48,21 @@
  */
 
 import { showToast } from "./toastConfig";
+// import { signupSchema } from "./validationSchemas";
+
+// export const validateAuthInputs = (inputs) => {
+//     try {
+//         signupSchema.parse(inputs); // Throws an error if validation fails
+//         return true;
+//     } catch (error) {
+//         if (error.errors) {
+//             error.errors.forEach((err) => {
+//                 showToast.error(err.message); // Show toast for each error
+//             });
+//         }
+//         return false;
+//     }
+// };
 
 export const validateAuthInputs = async ({
     fullName,

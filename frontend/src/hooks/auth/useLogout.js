@@ -24,14 +24,12 @@
  *   - Used in `SidebarFooter.jsx`:
  *       const { loading, handleLogout } = useLogout();
  *       <button onClick={handleLogout} disabled={loading}>Logout</button>
- *
- * Related Components:
- *   - Referenced in `Home.jsx` to manage user authentication state and logout functionality.
  */
 
 import { useState } from "react";
 import { showToast, dismissToast } from "../../utils/toastConfig";
 import { useAuthContext } from "../../context/AuthContext";
+import { apiRequest } from "../../utils/apiUtils";
 
 const useLogout = () => {
     const [loading, setLoading] = useState(false);
@@ -44,28 +42,15 @@ const useLogout = () => {
         const loadingToastId = showToast.loading("Logging out...");
 
         try {
-            const res = await fetch("/api/auth/logout", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            if (!res.ok) {
-                throw new Error("Logout failed");
-            }
-            const data = await res.json();
-
-            if (data.error) {
-                throw new Error(data.error);
-            }
-
-            // Success: dismiss loading toast and show success
-            dismissToast(loadingToastId);
-            showToast.success("Logged out successfully!");
+            await apiRequest("/api/auth/logout", "POST");
 
             // Clear user data
             localStorage.removeItem("user");
             setAuthUser(null);
+
+            // Success: dismiss loading toast and show success
+            dismissToast(loadingToastId);
+            showToast.success("Logged out successfully!");
         } catch (error) {
             // Error: dismiss loading toast and show error
             dismissToast(loadingToastId);

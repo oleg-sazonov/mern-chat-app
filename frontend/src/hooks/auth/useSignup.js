@@ -18,10 +18,16 @@
  *       - Displays an error toast if the signup fails.
  *       - Stores the user data in localStorage and updates the authentication context.
  *
- * Layout:
- *   - Loading Toast: Displays "Signing up..." while the request is in progress.
- *   - Success Toast: Displays "Signup successful!" on successful signup.
- *   - Error Toast: Displays the error message if the signup fails.
+ * Parameters:
+ *   - fullName (string): The full name of the user.
+ *   - username (string): The username of the user.
+ *   - password (string): The password of the user.
+ *   - confirmPassword (string): The confirmation password to match the password.
+ *   - gender (string): The gender of the user.
+ *
+ * Returns:
+ *   - handleSignup: Function to initiate the signup process.
+ *   - loading: Boolean indicating whether the signup request is in progress.
  *
  * Usage:
  *   - This hook is used in the `SignUp` component to handle form submission.
@@ -37,9 +43,6 @@
  *           confirmPassword: "password123",
  *           gender: "male",
  *       });
- *
- * Related Components:
- *   - Referenced in `Home.jsx` for managing user authentication state after signup.
  */
 
 import { useState } from "react";
@@ -48,6 +51,7 @@ import { showToast, dismissToast } from "../../utils/toastConfig";
 import { setStorageItem } from "../../utils/storage";
 import { useAuthContext } from "../../context/AuthContext";
 import { validateAuthInputs } from "../../utils/validationUtils";
+import { apiRequest } from "../../utils/apiUtils";
 
 export const useSignup = () => {
     const [loading, setLoading] = useState(false);
@@ -76,25 +80,13 @@ export const useSignup = () => {
         const loadingToastId = showToast.loading("Signing up...");
 
         try {
-            const res = await fetch("/api/auth/signup", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    fullName,
-                    username,
-                    password,
-                    confirmPassword,
-                    gender,
-                }),
+            const data = await apiRequest("/api/auth/signup", "POST", {
+                fullName,
+                username,
+                password,
+                confirmPassword,
+                gender,
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Signup failed");
-            }
 
             const userToStore = {
                 id: data.user._id,
