@@ -4,27 +4,31 @@
  * Validation schema for user signup form inputs.
  *
  * Exports:
- *   - signupSchema: A Zod schema for validating signup form data.
+ *   - signupSchema: A Yup schema for validating signup form data.
  *
  * Fields:
  *   - fullName:
  *       - Type: string
  *       - Validation:
- *           - Required (minimum 1 character).
+ *           - Required.
+ *           - Minimum 3 characters.
  *           - Maximum 50 characters.
  *           - Must contain only letters and spaces.
  *       - Error Messages:
  *           - "Full name is required."
+ *           - "Full name must be at least 3 characters."
  *           - "Full name must not exceed 50 characters."
  *           - "Full name must contain only letters and spaces."
  *
  *   - username:
  *       - Type: string
  *       - Validation:
- *           - Required (minimum 3 characters).
+ *           - Required.
+ *           - Minimum 3 characters.
  *           - Maximum 30 characters.
  *           - Must contain only letters, numbers, and underscores.
  *       - Error Messages:
+ *           - "Username is required."
  *           - "Username must be at least 3 characters."
  *           - "Username must not exceed 30 characters."
  *           - "Username can only contain letters, numbers, and underscores."
@@ -32,13 +36,15 @@
  *   - password:
  *       - Type: string
  *       - Validation:
- *           - Required (minimum 6 characters).
+ *           - Required.
+ *           - Minimum 6 characters.
  *           - Maximum 100 characters.
  *           - Must contain at least one uppercase letter.
  *           - Must contain at least one lowercase letter.
  *           - Must contain at least one number.
  *           - Must contain at least one special character (@, $, !, %, *, ?, &, #).
  *       - Error Messages:
+ *           - "Password is required."
  *           - "Password must be at least 6 characters."
  *           - "Password must not exceed 100 characters."
  *           - "Password must contain at least one uppercase letter."
@@ -49,18 +55,20 @@
  *   - confirmPassword:
  *       - Type: string
  *       - Validation:
- *           - Required (minimum 6 characters).
+ *           - Required.
  *           - Must match the `password` field.
  *       - Error Messages:
  *           - "Confirm password is required."
  *           - "Passwords do not match."
  *
  *   - gender:
- *       - Type: enum ("male", "female")
+ *       - Type: string (enum: "male", "female")
  *       - Validation:
  *           - Required.
+ *           - Must be either "male" or "female".
  *       - Error Messages:
  *           - "Gender is required."
+ *           - "Gender must be either 'male' or 'female'."
  *
  *   - profilePicture:
  *       - Type: string (optional)
@@ -74,7 +82,7 @@
  *
  * Example:
  *   - Validating signup inputs:
- *       const result = signupSchema.parse({
+ *       const result = await signupSchema.validate({
  *           fullName: "John Doe",
  *           username: "johndoe",
  *           password: "Password123!",
@@ -84,67 +92,43 @@
  *       });
  */
 
-import { z } from "zod";
+import * as Yup from "yup";
 
-export const signupSchema = z
-    .object({
-        fullName: z
-            .string()
-            .min(1, "Full name is required")
-            .max(50, "Full name must not exceed 50 characters")
-            .regex(
-                /^[a-zA-Z\s]+$/,
-                "Full name must contain only letters and spaces"
-            ),
-        username: z
-            .string()
-            .min(3, "Username must be at least 3 characters")
-            .max(30, "Username must not exceed 30 characters")
-            .regex(
-                /^[a-zA-Z0-9_]+$/,
-                "Username can only contain letters, numbers, and underscores"
-            ),
-        password: z
-            .string()
-            .min(6, "Password must be at least 6 characters")
-            .max(100, "Password must not exceed 100 characters")
-            .regex(
-                /[A-Z]/,
-                "Password must contain at least one uppercase letter"
-            )
-            .regex(
-                /[a-z]/,
-                "Password must contain at least one lowercase letter"
-            )
-            .regex(/[0-9]/, "Password must contain at least one number")
-            .regex(
-                /[@$!%*?&#]/,
-                "Password must contain at least one special character (@, $, !, %, *, ?, &, #)"
-            ),
-        confirmPassword: z.string().min(6, "Confirm password is required"),
-        gender: z.enum(["male", "female"], "Gender is required"),
-        profilePicture: z
-            .string()
-            .url("Profile picture must be a valid URL")
-            .optional(),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords do not match",
-        path: ["confirmPassword"], // Highlight the confirmPassword field
-    });
-
-// Simple schema to check functionality
-// import { z } from "zod";
-
-// export const signupSchema = z
-//     .object({
-//         fullName: z.string().min(1, "Full name is required"),
-//         username: z.string().min(2, "Username must be at least 2 characters"),
-//         password: z.string().min(6, "Password must be at least 6 characters"),
-//         confirmPassword: z.string().min(6, "Confirm password is required"),
-//         gender: z.enum(["male", "female"], "Gender is required"),
-//     })
-//     .refine((data) => data.password === data.confirmPassword, {
-//         message: "Passwords do not match",
-//         path: ["confirmPassword"], // Highlight the confirmPassword field
-//     });
+export const signupSchema = Yup.object().shape({
+    fullName: Yup.string()
+        .required("Full name is required")
+        .min(3, "Full name must be at least 3 characters")
+        .max(50, "Full name must not exceed 50 characters")
+        .matches(
+            /^[a-zA-Z\s]+$/,
+            "Full name must contain only letters and spaces"
+        ),
+    username: Yup.string()
+        .required("Username is required")
+        .min(3, "Username must be at least 3 characters")
+        .max(30, "Username must not exceed 30 characters")
+        .matches(
+            /^[a-zA-Z0-9_]+$/,
+            "Username can only contain letters, numbers, and underscores"
+        ),
+    password: Yup.string()
+        .required("Password is required")
+        .min(6, "Password must be at least 6 characters")
+        .max(100, "Password must not exceed 100 characters")
+        .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+        .matches(/[0-9]/, "Password must contain at least one number")
+        .matches(
+            /[@$!%*?&#]/,
+            "Password must contain at least one special character (@, $, !, %, *, ?, &, #)"
+        ),
+    confirmPassword: Yup.string()
+        .required("Confirm password is required")
+        .oneOf([Yup.ref("password"), null], "Passwords do not match"),
+    gender: Yup.string()
+        .required("Gender is required")
+        .oneOf(["male", "female"], "Gender is required"),
+    profilePicture: Yup.string()
+        .url("Profile picture must be a valid URL")
+        .notRequired(),
+});

@@ -8,24 +8,27 @@
  *
  * Parameters:
  *   - inputs (Object): The input fields to validate.
- *       - fullName (string): The full name of the user (optional for login).
- *       - username (string): The username of the user.
- *       - password (string): The password of the user.
- *       - confirmPassword (string): The confirmation password (optional for login).
- *       - gender (string): The gender of the user (optional for login).
+ *       - fullName (string): The full name of the user (required for signup, optional for login).
+ *       - username (string): The username of the user (required).
+ *       - password (string): The password of the user (required).
+ *       - confirmPassword (string): The confirmation password (required for signup, optional for login).
+ *       - gender (string): The gender of the user (required for signup, optional for login).
  *
  * Returns:
- *   - (boolean): Returns `true` if inputs are valid, otherwise `false`.
+ *   - (Object): Returns an object with the following structure:
+ *       - isValid (boolean): `true` if inputs are valid, otherwise `false`.
  *
  * Validation Rules:
- *   - Username and password are required.
- *   - Full name is required for signup.
- *   - Password must be at least 6 characters long.
- *   - Password and confirmPassword must match (if confirmPassword is provided).
- *   - Gender is required for signup.
+ *   - `username` and `password` are required for all forms.
+ *   - `fullName` is required for signup forms.
+ *   - `password` must be at least 6 characters long.
+ *   - `password` and `confirmPassword` must match (if `confirmPassword` is provided).
+ *   - `gender` is required for signup forms.
  *
  * Error Handling:
  *   - Displays error messages using toast notifications for invalid inputs.
+ *   - Shows the first validation error if multiple errors are present.
+ *   - Displays a generic error message ("Validation failed") if no specific issues are found.
  *
  * Usage:
  *   - Used in `useSignup` and `useLogin` hooks to validate form inputs before making API requests.
@@ -45,24 +48,11 @@
  *
  * Related Components:
  *   - Referenced in `Home.jsx` for managing user authentication state during signup and login.
+ *   - Used in `SignUp.jsx` and `Login.jsx` for validating form inputs.
  */
 
 import { showToast } from "./toastConfig";
-// import { signupSchema } from "./validationSchemas";
-
-// export const validateAuthInputs = (inputs) => {
-//     try {
-//         signupSchema.parse(inputs); // Throws an error if validation fails
-//         return true;
-//     } catch (error) {
-//         if (error.errors) {
-//             error.errors.forEach((err) => {
-//                 showToast.error(err.message); // Show toast for each error
-//             });
-//         }
-//         return false;
-//     }
-// };
+import { signupSchema } from "./validationSchemas";
 
 export const validateAuthInputs = async ({
     fullName,
@@ -71,30 +61,22 @@ export const validateAuthInputs = async ({
     confirmPassword,
     gender,
 }) => {
-    if (!username || !password) {
-        showToast.error("Username and password are required");
-        return false;
+    try {
+        // Validate inputs using Yup schema
+        await signupSchema.validate(
+            { fullName, username, password, confirmPassword, gender },
+            { abortEarly: false } // Collect all validation errors
+        );
+        return { isValid: true }; // Validation passed
+    } catch (error) {
+        // Handle validation errors
+        if (error.inner && error.inner.length > 0) {
+            // Show only the first validation error
+            showToast.error(error.inner[0].message);
+        } else {
+            // Show a generic error message if no specific issues are found
+            showToast.error("Validation failed");
+        }
+        return { isValid: false }; // Validation failed
     }
-
-    if (fullName !== undefined && !fullName) {
-        showToast.error("Full name is required");
-        return false;
-    }
-
-    if (password.length < 6) {
-        showToast.error("Password must be at least 6 characters");
-        return false;
-    }
-
-    if (confirmPassword !== undefined && password !== confirmPassword) {
-        showToast.error("Passwords do not match");
-        return false;
-    }
-
-    if (gender !== undefined && !gender) {
-        showToast.error("Gender is required");
-        return false;
-    }
-
-    return true;
 };

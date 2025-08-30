@@ -7,7 +7,7 @@
  *   - useSignup: Provides a function to handle user signup and a loading state.
  *
  * State:
- *   - loading: Boolean indicating whether the signup request is in progress.
+ *   - loading (boolean): Indicates whether the signup request is in progress.
  *
  * Functions:
  *   - handleSignup:
@@ -26,8 +26,12 @@
  *   - gender (string): The gender of the user.
  *
  * Returns:
- *   - handleSignup: Function to initiate the signup process.
- *   - loading: Boolean indicating whether the signup request is in progress.
+ *   - handleSignup (function): Function to initiate the signup process.
+ *   - loading (boolean): Indicates whether the signup request is in progress.
+ *
+ * Error Handling:
+ *   - Displays an error toast if validation fails or the API request encounters an error.
+ *   - Uses `dismissToast` to remove the loading toast before showing error messages.
  *
  * Usage:
  *   - This hook is used in the `SignUp` component to handle form submission.
@@ -64,7 +68,8 @@ export const useSignup = () => {
         confirmPassword,
         gender,
     }) => {
-        const isValid = await validateAuthInputs({
+        // Validate inputs
+        const { isValid } = await validateAuthInputs({
             fullName,
             username,
             password,
@@ -72,7 +77,7 @@ export const useSignup = () => {
             gender,
         });
 
-        if (!isValid) return;
+        if (!isValid) return; // Stop if validation fails
 
         setLoading(true);
 
@@ -93,6 +98,7 @@ export const useSignup = () => {
                 username: data.user.username,
             };
 
+            // Store user data and update auth context
             setStorageItem("user", userToStore);
             setAuthUser(userToStore);
 
