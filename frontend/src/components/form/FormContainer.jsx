@@ -38,7 +38,7 @@ import {
 
 const FormContainer = ({ children, title }) => {
     return (
-        <div className={getContainerClass()}>
+        <div className={getContainerClass()} id="form-container">
             <div className={getFormWrapperClass()}>
                 <h1 className={getHeadingClass()}>{title}</h1>
                 {children}

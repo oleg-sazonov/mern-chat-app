@@ -1,0 +1,1 @@
+1) Fix the validation. On SignUp page it works good but it provides errors on Login page with unexisting fields: "Full name is required", "Gender is required" etc.
