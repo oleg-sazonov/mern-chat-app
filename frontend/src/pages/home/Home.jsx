@@ -7,12 +7,12 @@
  *   - Home: Renders the chat interface with responsive sidebar and message container.
  *
  * State:
- *   - isMobile: Boolean indicating if the viewport is mobile-sized (<768px).
+ *   - isMobile (boolean): Indicates if the viewport is mobile-sized (<768px).
  *
- * Functions:
- *   - useEffect (responsive layout)
- *     - Adds/removes a window resize event listener.
- *     - Updates isMobile state based on window width.
+ * Components:
+ *   - Sidebar: Displays the list of conversations and user info.
+ *   - MessageContainer: Displays the selected conversation's messages and input area.
+ *   - ConversationView: Helper component for mobile view to toggle between Sidebar and MessageContainer.
  *
  * Layout:
  *   - Outer Container: Centers content and applies responsive padding.
@@ -20,22 +20,15 @@
  *   - Desktop View: Renders Sidebar and MessageContainer side-by-side with responsive widths.
  *   - Mobile View: Renders either Sidebar or MessageContainer based on the selected conversation.
  *
- * Components:
- *   - Sidebar: Displays the list of conversations and user info.
- *   - MessageContainer: Displays the selected conversation's messages and input area.
- *   - ConversationView: Helper component for mobile view to toggle between Sidebar and MessageContainer.
- *
  * Usage:
  *   - This component is rendered in `App.jsx` as part of the `/` route.
- *   - Manages responsive layout and conversation state using the ConversationProvider.
+ *   - Manages responsive layout and conversation state using the Zustand store (`useConversationStore`).
  *
  * Example:
  *   - Rendered in `App.jsx`:
  *       <Route path="/" element={<Home />} />
  */
 
-import { useEffect } from "react";
-import { useConversation } from "../../context/ConversationContext";
 import Sidebar from "../../components/sidebar/Sidebar";
 import MessageContainer from "../../components/messageContainer/MessageContainer";
 import {
@@ -44,19 +37,10 @@ import {
     getSidebarClass,
     getMessageContainerClass,
 } from "../../styles/HomeStyles";
+import { useConversationStore } from "../../hooks/conversation/useConversationStore";
 
 const Home = () => {
-    const { isMobile, setIsMobile } = useConversation();
-
-    // Handle responsive layout changes
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, [setIsMobile]);
+    const { isMobile } = useConversationStore();
 
     return (
         <div className={getOuterContainerClass()}>
@@ -80,7 +64,7 @@ const Home = () => {
 
 // Helper component for mobile view
 const ConversationView = () => {
-    const { selectedConversation } = useConversation();
+    const { selectedConversation } = useConversationStore();
 
     return selectedConversation ? (
         <MessageContainer className="w-full" />

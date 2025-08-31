@@ -7,13 +7,20 @@
  *   - ConversationAvatar: Renders the avatar for a user with dynamic styles based on selection and online status.
  *
  * Props:
- *   - user: The user object containing `id` and `name`.
- *   - isSelected: Boolean indicating if this conversation is selected.
- *   - isOnline: Boolean indicating if the user is online (default: true).
+ *   - user (object): The user object containing:
+ *       - profilePicture (string): URL of the user's profile picture.
+ *       - _id (string): The user's unique ID.
+ *       - fullName (string): The user's full name.
+ *   - isSelected (boolean): Indicates if this conversation is selected.
+ *   - isOnline (boolean): Indicates if the user is online (default: false).
  *
  * Layout:
  *   - Avatar Container: A circular container with dynamic styles for selection.
- *   - Avatar Image: Displays the user's avatar image, fetched dynamically using the user's ID.
+ *   - Avatar Image: Displays the user's avatar image, fetched dynamically using the user's profile picture or ID.
+ *
+ * Styling:
+ *   - Uses `getAvatarClass` for online status styling.
+ *   - Uses `getAvatarContainerClass` for selection styling.
  *
  * Usage:
  *   - Used within the `SidebarConversation` component to display the user's avatar.
@@ -30,7 +37,7 @@ import {
     getAvatarContainerClass,
 } from "../../../styles/ConversationStyles";
 
-const ConversationAvatar = memo(({ user, isSelected, isOnline = true }) => {
+const ConversationAvatar = memo(({ user, isSelected, isOnline = false }) => {
     if (!user) return null;
 
     const avatarClass = getAvatarClass(isOnline);
@@ -40,8 +47,11 @@ const ConversationAvatar = memo(({ user, isSelected, isOnline = true }) => {
         <div className={avatarClass}>
             <div className={containerClass}>
                 <img
-                    src={`https://robohash.org/user${user.id}.png`}
-                    alt={`${user.name}'s avatar`}
+                    src={
+                        user.profilePicture ||
+                        `https://robohash.org/user${user._id}.png`
+                    }
+                    alt={`${user.fullName}'s avatar`}
                     className="transition-opacity duration-150 ease-in-out hover:opacity-95"
                     loading="lazy"
                 />

@@ -41,8 +41,7 @@
 
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { ConversationProvider } from "./context/ConversationContext";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./store/AuthContext";
 
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
@@ -50,6 +49,7 @@ import SignUp from "./pages/signup/SignUp";
 
 import { Toaster } from "react-hot-toast";
 import { TOAST_STYLE } from "./utils/toastConfig";
+import { useAuthContext } from "./store/AuthContext";
 
 // Main App component - only sets up providers
 function App() {
@@ -65,39 +65,37 @@ function AppContent() {
     const location = useLocation();
 
     return (
-        <ConversationProvider>
-            <div className="p-4 h-screen flex items-center justify-center">
-                <AnimatePresence mode="wait">
-                    <Routes location={location} key={location.pathname}>
-                        <Route
-                            path="/"
-                            element={
-                                <ProtectedRoute>
-                                    <Home />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/login"
-                            element={
-                                <PublicRoute>
-                                    <Login />
-                                </PublicRoute>
-                            }
-                        />
-                        <Route
-                            path="/signup"
-                            element={
-                                <PublicRoute>
-                                    <SignUp />
-                                </PublicRoute>
-                            }
-                        />
-                    </Routes>
-                    <Toaster position="top-center" toastOptions={TOAST_STYLE} />
-                </AnimatePresence>
-            </div>
-        </ConversationProvider>
+        <div className="p-4 h-screen flex items-center justify-center">
+            <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                    <Route
+                        path="/"
+                        element={
+                            <ProtectedRoute>
+                                <Home />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/login"
+                        element={
+                            <PublicRoute>
+                                <Login />
+                            </PublicRoute>
+                        }
+                    />
+                    <Route
+                        path="/signup"
+                        element={
+                            <PublicRoute>
+                                <SignUp />
+                            </PublicRoute>
+                        }
+                    />
+                </Routes>
+                <Toaster position="top-center" toastOptions={TOAST_STYLE} />
+            </AnimatePresence>
+        </div>
     );
 }
 
@@ -112,8 +110,5 @@ function PublicRoute({ children }) {
     const { authUser } = useAuthContext();
     return authUser ? <Navigate to="/" /> : children;
 }
-
-// Import this after the components that use it
-import { useAuthContext } from "./context/AuthContext";
 
 export default App;

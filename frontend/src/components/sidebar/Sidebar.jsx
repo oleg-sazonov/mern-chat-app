@@ -7,19 +7,18 @@
  *   - Sidebar: Renders the sidebar header, filtered conversations, and footer.
  *
  * Props:
- *   - className: Responsive width classes for layout (default: "w-1/4").
+ *   - className (string): Responsive width classes for layout (default: "w-1/4").
  *
  * State:
- *   - filteredUsers: Array of users filtered by the search term.
- *   - searchTerm: The current search term entered by the user.
+ *   - filteredUsers (array): Array of users filtered by the search term.
+ *   - searchTerm (string): The current search term entered by the user.
  *
  * Functions:
- *   - handleSearch(searchTerm)
- *     - Filters users by name based on the search term.
- *     - Updates the `filteredUsers` state.
- *
- *   - useEffect (filtering logic)
- *     - Updates the `filteredUsers` state whenever the `searchTerm` or `allUsers` changes.
+ *   - handleSearch(searchTerm):
+ *       - Updates the `searchTerm` state with the user's input.
+ *   - useEffect (filtering logic):
+ *       - Filters the `users` array based on the `searchTerm`.
+ *       - Updates the `filteredUsers` state whenever `searchTerm` or `users` changes.
  *
  * Layout:
  *   - SidebarHeader: Displays the search input and title.
@@ -36,18 +35,16 @@
  *       <Sidebar className="w-1/4" />
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import SidebarHeader from "./SidebarHeader";
 import SidebarConversations from "./SidebarConversations";
 import SidebarFooter from "./SidebarFooter";
-import generateSampleUsers from "../../data/sampleUsers";
+import { useUserStore } from "../../hooks/conversation/useUserStore";
 
 const Sidebar = ({ className = "w-1/4" }) => {
+    const { users } = useUserStore();
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-
-    // Use the imported sample data function
-    const allUsers = useMemo(() => generateSampleUsers(), []);
 
     // Handle search
     const handleSearch = (searchTerm) => {
@@ -57,21 +54,29 @@ const Sidebar = ({ className = "w-1/4" }) => {
     // Filter users whenever search term changes
     useEffect(() => {
         if (searchTerm.trim() === "") {
-            setFilteredUsers(allUsers);
+            setFilteredUsers(users);
         } else {
-            const filtered = allUsers.filter((user) =>
-                user.name.toLowerCase().includes(searchTerm.toLowerCase())
+            const filtered = users.filter(
+                (user) =>
+                    user.fullName
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    user.username
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
             );
             setFilteredUsers(filtered);
         }
-    }, [searchTerm, allUsers]);
+    }, [searchTerm, users]);
 
     return (
         <div
             className={`${className} bg-white/10 backdrop-blur-md border-r border-white/10 flex flex-col`}
         >
             <SidebarHeader onSearch={handleSearch} />
-            <SidebarConversations users={filteredUsers} />
+            <SidebarConversations
+                users={filteredUsers.length > 0 ? filteredUsers : users}
+            />
             <SidebarFooter />
         </div>
     );

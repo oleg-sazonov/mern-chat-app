@@ -28,7 +28,7 @@
 
 import { useState } from "react";
 import { showToast, dismissToast } from "../../utils/toastConfig";
-import { useAuthContext } from "../../context/AuthContext";
+import { useAuthContext } from "../../store/AuthContext";
 import { apiRequest } from "../../utils/apiUtils";
 
 const useLogout = () => {

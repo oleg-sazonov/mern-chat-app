@@ -43,7 +43,7 @@ import { useState } from "react";
 
 import { showToast, dismissToast } from "../../utils/toastConfig";
 import { setStorageItem } from "../../utils/storage";
-import { useAuthContext } from "../../context/AuthContext";
+import { useAuthContext } from "../../store/AuthContext";
 import { validateAuthInputs } from "../../utils/validationUtils";
 import { apiRequest } from "../../utils/apiUtils";
 
