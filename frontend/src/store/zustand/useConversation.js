@@ -8,12 +8,15 @@
  *
  * State:
  *   - selectedConversation (object | null): The currently selected conversation object.
+ *   - conversations (array): An array of all conversations available to the user.
  *   - messages (array): An array of messages for the selected conversation.
  *   - isMobile (boolean): Indicates whether the viewport is mobile-sized (<768px).
  *
  * Actions:
  *   - setSelectedConversation(selectedConversation):
  *       - Updates the `selectedConversation` state with the provided conversation object.
+ *   - setConversations(conversations):
+ *       - Updates the `conversations` state with the provided array of conversations.
  *   - setMessages(messages):
  *       - Updates the `messages` state with the provided array of messages.
  *   - setIsMobile(isMobile):
@@ -28,6 +31,8 @@
  *       const {
  *           selectedConversation,
  *           setSelectedConversation,
+ *           conversations,
+ *           setConversations,
  *           messages,
  *           setMessages,
  *           isMobile,
@@ -36,6 +41,9 @@
  *
  *       // Set a new conversation
  *       setSelectedConversation({ id: "123", name: "John Doe" });
+ *
+ *       // Update conversations
+ *       setConversations([{ id: "1", name: "Jane Smith" }]);
  *
  *       // Update messages
  *       setMessages([{ id: "1", content: "Hello!" }]);
@@ -52,11 +60,15 @@ const useConversation = create((set) => ({
     setSelectedConversation: (selectedConversation) =>
         set({ selectedConversation }),
 
+    // Conversations list
+    conversations: [],
+    setConversations: (conversations) => set({ conversations }),
+
     // Messages management
     messages: [],
     setMessages: (messages) => set({ messages }),
 
-    // Responsive layout state (moved from ConversationContext)
+    // Responsive layout state
     isMobile: window.innerWidth < 768,
     setIsMobile: (isMobile) => set({ isMobile }),
 }));

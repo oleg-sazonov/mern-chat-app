@@ -7,13 +7,17 @@
  *   - SidebarConversation: Renders user avatar, name, last message, unread count, and selection state.
  *
  * Props:
- *   - user (object): The user object containing:
- *       - _id (string): The user's unique ID.
- *       - fullName (string): The user's full name.
- *       - lastMessage (string): The last message in the conversation (optional).
- *       - unreadCount (number): The number of unread messages (optional).
- *       - isOnline (boolean): Indicates if the user is online (optional).
- *       - updatedAt (string): The timestamp of the last message or update.
+ *   - conversation (object): The conversation object containing:
+ *       - _id (string): The unique ID of the conversation.
+ *       - participants (array): An array of participant objects in the conversation.
+ *           - Each participant contains:
+ *               - _id (string): The participant's unique ID.
+ *               - fullName (string): The participant's full name.
+ *               - isOnline (boolean): Indicates if the participant is online (optional).
+ *       - lastMessage (object | null): The last message in the conversation (optional).
+ *           - content (string): The content of the last message.
+ *           - createdAt (string): The timestamp of the last message.
+ *       - unreadCount (number): The number of unread messages in the conversation (optional).
  *
  * Context:
  *   - handleSelectConversation: Function to update the selected conversation, accessed via `useConversationStore`.
@@ -45,7 +49,7 @@
  *
  * Example:
  *   - Rendered in `SidebarConversations.jsx`:
- *       <SidebarConversation user={user} />
+ *       <SidebarConversation conversation={conversation} />
  */
 
 import { memo, useCallback } from "react";
@@ -60,41 +64,50 @@ import {
 } from "../../../styles/ConversationStyles";
 import { useConversationStore } from "../../../hooks/conversation/useConversationStore";
 
-const SidebarConversation = memo(({ user }) => {
+const SidebarConversation = memo(({ conversation }) => {
     const { handleSelectConversation, isSelected } = useConversationStore();
-    const isUserSelected = isSelected(user._id);
+    const isConversationSelected = isSelected(conversation._id);
+
+    // Get the other participant in the conversation (excluding the current user)
+    // This assumes participants[0] is the other user, but you may need more logic here
+    const user = conversation.participants[0];
 
     // Memoize the click handler
     const onClickConversation = useCallback(() => {
-        handleSelectConversation(user);
-    }, [user, handleSelectConversation]);
+        handleSelectConversation(conversation);
+    }, [conversation, handleSelectConversation]);
 
     // Get classes from shared styles
-    const containerClass = getContainerClass(isUserSelected);
-    const nameClass = getNameClass(isUserSelected);
-    const messageClass = getMessageClass(isUserSelected);
-    const timeClass = getTimeClass(isUserSelected);
-    const badgeClass = getBadgeClass(isUserSelected);
+    const containerClass = getContainerClass(isConversationSelected);
+    const nameClass = getNameClass(isConversationSelected);
+    const messageClass = getMessageClass(isConversationSelected);
+    const timeClass = getTimeClass(isConversationSelected);
+    const badgeClass = getBadgeClass(isConversationSelected);
 
     return (
         <div className={containerClass} onClick={onClickConversation}>
             <ConversationAvatar
                 user={user}
-                isSelected={isUserSelected}
+                isSelected={isConversationSelected}
                 isOnline={user.isOnline || false}
             />
             <div className="flex-1 min-w-0 transition-all duration-150 ease-in-out">
                 <h3 className={nameClass}>{user.fullName}</h3>
                 <p className={messageClass}>
-                    {user.lastMessage || "Click to start a conversation"}
+                    {conversation.lastMessage?.content ||
+                        "Click to start a conversation"}
                 </p>
             </div>
             <div className="flex flex-col items-end transition-all duration-150 ease-in-out">
                 <span className={timeClass}>
-                    {formatMessageTime(user.updatedAt) || "New"}
+                    {conversation.lastMessage
+                        ? formatMessageTime(conversation.lastMessage.createdAt)
+                        : "New"}
                 </span>
-                {user.unreadCount > 0 && (
-                    <span className={badgeClass}>{user.unreadCount}</span>
+                {conversation.unreadCount > 0 && (
+                    <span className={badgeClass}>
+                        {conversation.unreadCount}
+                    </span>
                 )}
             </div>
         </div>

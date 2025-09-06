@@ -7,33 +7,37 @@
  *   - SidebarConversations: Displays each conversation using the SidebarConversation component.
  *
  * Context:
- *   - users: Array of user objects fetched from the `useUserStore` hook.
- *   - loading: Boolean indicating whether the user data is being fetched.
+ *   - conversations: Array of conversation objects fetched from the `useConversationStore` hook.
+ *   - loading: Boolean indicating whether the conversation data is being fetched.
  *
  * Layout:
  *   - If `loading` is true:
  *       - Displays a loading spinner centered in the sidebar.
- *   - If `users` exist:
- *       - Maps each user to a SidebarConversation component.
- *       - Passes user data to the SidebarConversation component.
- *   - If no `users` are found:
- *       - Displays a "No users found" message.
+ *   - If `conversations` exist:
+ *       - Maps each conversation to a SidebarConversation component.
+ *       - Passes conversation data to the SidebarConversation component.
+ *   - If no `conversations` are found:
+ *       - Displays a "No conversations found" message.
  *
  * Usage:
  *   - Used within the `Sidebar` component to display the conversation list.
- *   - Fetches user data and manages loading state via the `useUserStore` hook.
+ *   - Fetches conversation data and manages loading state via the `useConversationStore` hook.
  *
  * Example:
  *   - Rendered in `Sidebar.jsx`:
  *       <SidebarConversations />
+ *
+ * Dependencies:
+ *   - SidebarConversation: A component that renders individual conversation items.
+ *   - useConversationStore: A Zustand hook for managing conversation-related state.
  */
 
 import { memo } from "react";
 import SidebarConversation from "./conversation/SidebarConversation";
-import { useUserStore } from "../../hooks/conversation/useUserStore";
+import { useConversationStore } from "../../hooks/conversation/useConversationStore";
 
 const SidebarConversations = memo(() => {
-    const { users, loading } = useUserStore();
+    const { conversations, loading } = useConversationStore();
 
     if (loading) {
         return (
@@ -45,15 +49,18 @@ const SidebarConversations = memo(() => {
 
     return (
         <div className="overflow-auto flex-1">
-            {users.length > 0 ? (
+            {conversations.length > 0 ? (
                 <div className="flex flex-col gap-1 p-2">
-                    {users.map((user) => (
-                        <SidebarConversation key={user._id} user={user} />
+                    {conversations.map((conversation) => (
+                        <SidebarConversation
+                            key={conversation._id}
+                            conversation={conversation}
+                        />
                     ))}
                 </div>
             ) : (
                 <div className="flex items-center justify-center h-32 text-white/50 text-sm">
-                    No users found
+                    No conversations found
                 </div>
             )}
         </div>

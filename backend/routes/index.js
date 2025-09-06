@@ -1,19 +1,13 @@
 import authRoutes from "./auth.routes.js";
 import messageRoutes from "./message.routes.js";
 import userRoutes from "./user.routes.js";
+import conversationRoutes from "./conversation.routes.js";
 
 import { getDBHealth } from "../config/db/db.config.js";
 
 export const setupRoutes = async (app) => {
     // Health check route (before API routes)
     app.get("/health", async (req, res) => {
-        // res.status(200).json({
-        //     status: "OK",
-        //     message: "MERN ChatApp API is running",
-        //     timestamp: new Date().toISOString(),
-        //     environment: process.env.NODE_ENV || "development",
-        // });
-
         const dbHealth = await getDBHealth();
         res.json(dbHealth);
     });
@@ -22,6 +16,7 @@ export const setupRoutes = async (app) => {
     app.use("/api/auth", authRoutes);
     app.use("/api/messages", messageRoutes);
     app.use("/api/users", userRoutes);
+    app.use("/api/conversations", conversationRoutes);
 
     console.log("📋 API routes configured");
     console.log("Available routes:");
@@ -32,4 +27,6 @@ export const setupRoutes = async (app) => {
     console.log("   📍 GET     /api/messages/:receiverId (protected)");
     console.log("   📍 POST    /api/messages/send/:receiverId (protected)");
     console.log("   📍 GET     /api/users (protected)");
+    console.log("   📍 GET     /api/users/:userId (protected)");
+    console.log("   📍 GET     /api/conversations (protected)");
 };
