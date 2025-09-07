@@ -34,6 +34,10 @@
  *   - handleSelectConversation(conversation):
  *       - Updates the `selectedConversation` state with the provided conversation object.
  *       - Clears previous messages when selecting a new conversation.
+ *   - handleSelectUser(user):
+ *       - Handles selecting a user to start a new conversation.
+ *       - If a conversation already exists with the user, it selects the existing conversation.
+ *       - If no conversation exists, it creates a temporary conversation for immediate UI feedback.
  *
  * Effects:
  *   - Adds a window resize listener to update the `isMobile` state dynamically.
@@ -51,34 +55,12 @@
  *   - messages (array): The list of messages for the selected conversation.
  *   - setMessages (function): Function to update the messages array.
  *   - isMobile (boolean): Indicates if the viewport is mobile-sized.
+ *   - handleSelectUser (function): Function to handle selecting a user for a new conversation.
  *   - refreshConversations (function): Function to manually refresh conversations.
  *
  * Usage:
  *   - This hook is used in components like `Sidebar` and `MessageContainer` to manage conversation state.
  *   - Provides a centralized way to handle conversation selection, messages, and responsive layout.
- *
- * Example:
- *   - In a component:
- *       const {
- *           selectedConversation,
- *           conversations,
- *           loading,
- *           handleSelectConversation,
- *           isSelected,
- *           messages,
- *           setMessages,
- *           isMobile,
- *           refreshConversations,
- *       } = useConversationStore();
- *
- *       // Select a conversation
- *       handleSelectConversation(conversation);
- *
- *       // Check if a user is selected
- *       const isUserSelected = isSelected(userId);
- *
- *       // Refresh conversations
- *       refreshConversations();
  */
 
 import useConversation from "../../store/zustand/useConversation";
@@ -154,11 +136,63 @@ export const useConversationStore = () => {
     };
 
     // Function to handle conversation selection
-    const handleSelectConversation = (conversation) => {
-        setSelectedConversation(conversation);
-        // Clear previous messages when selecting a new conversation
-        setMessages([]);
-    };
+    const handleSelectConversation = useCallback(
+        (conversation) => {
+            setSelectedConversation(conversation);
+            // Clear previous messages when selecting a new conversation
+            setMessages([]);
+        },
+        [setSelectedConversation, setMessages]
+    );
+
+    const handleSelectUser = useCallback(
+        async (user) => {
+            setLoading(true);
+
+            try {
+                // Check if there's already a conversation with this user
+                const existingConversation = conversations.find((conv) =>
+                    conv.participants.some(
+                        (participant) => participant._id === user._id
+                    )
+                );
+
+                if (existingConversation) {
+                    // If there is an existing conversation, simply select it
+                    handleSelectConversation(existingConversation);
+                } else {
+                    // Create a temporary conversation object for immediate UI feedback
+                    const tempConversation = {
+                        _id: `temp_${Date.now()}`,
+                        participants: [user],
+                        lastMessage: null,
+                    };
+
+                    // Select this temporary conversation
+                    setSelectedConversation(tempConversation);
+
+                    // Clear messages
+                    setMessages([]);
+
+                    // In a real implementation, you would create a new conversation on the backend here
+                    // For now, we'll just simulate the selection
+                }
+            } catch (error) {
+                showToast.error(
+                    error.message || "Failed to start conversation"
+                );
+                console.error("Error selecting user:", error);
+            } finally {
+                setLoading(false);
+            }
+        },
+        [
+            conversations,
+            setSelectedConversation,
+            handleSelectConversation,
+            setMessages,
+        ]
+    );
 
     return {
         selectedConversation,
@@ -171,6 +205,7 @@ export const useConversationStore = () => {
         messages,
         setMessages,
         isMobile,
+        handleSelectUser,
         refreshConversations: () => fetchConversations(false),
     };
 };

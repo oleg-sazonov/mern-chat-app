@@ -20,12 +20,8 @@
  */
 export const getContainerClass = (isSelected) => `
   flex items-center gap-3 p-2 rounded-lg cursor-pointer 
-  transition-all duration-150 ease-in-out transform
-  ${
-      isSelected
-          ? "bg-white/15 selected"
-          : "hover:bg-white/10 hover:scale-[1.01]"
-  }
+  transition-colors duration-150
+  ${isSelected ? "bg-white/15" : "hover:bg-white/10"}
 `;
 
 /**
@@ -33,8 +29,7 @@ export const getContainerClass = (isSelected) => `
  * @param {boolean} isOnline - Whether the user is online
  */
 export const getAvatarClass = (isOnline) => `
-  avatar ${isOnline ? "avatar-online" : ""} 
-  transition-all duration-150 ease-in-out
+  avatar ${isOnline ? "avatar-online" : ""}
 `;
 
 /**
@@ -42,12 +37,8 @@ export const getAvatarClass = (isOnline) => `
  * @param {boolean} isSelected - Whether the conversation is selected
  */
 export const getAvatarContainerClass = (isSelected) => `
-  w-12 rounded-full transition-all duration-150 ease-in-out
-  ${
-      isSelected
-          ? "ring ring-white/40 ring-offset-1 ring-offset-transparent shadow-lg"
-          : "bg-white/10 hover:bg-white/15"
-  }
+  w-12 rounded-full
+  ${isSelected ? "ring ring-white/30" : "bg-white/10"}
 `;
 
 /**
@@ -55,8 +46,8 @@ export const getAvatarContainerClass = (isSelected) => `
  * @param {boolean} isSelected - Whether the conversation is selected
  */
 export const getNameClass = (isSelected) => `
-  font-medium truncate transition-colors duration-150
-  ${isSelected ? "text-white" : "text-white/90 group-hover:text-white"}
+  font-medium text-ellipsis whitespace-nowrap overflow-hidden max-w-[180px]
+  ${isSelected ? "text-white" : "text-white/90"}
 `;
 
 /**
@@ -64,8 +55,8 @@ export const getNameClass = (isSelected) => `
  * @param {boolean} isSelected - Whether the conversation is selected
  */
 export const getMessageClass = (isSelected) => `
-  text-sm truncate transition-colors duration-150
-  ${isSelected ? "text-white/80" : "text-white/60 hover:text-white/70"}
+  text-sm truncate
+  ${isSelected ? "text-white/80" : "text-white/60"}
 `;
 
 /**
@@ -73,8 +64,8 @@ export const getMessageClass = (isSelected) => `
  * @param {boolean} isSelected - Whether the conversation is selected
  */
 export const getTimeClass = (isSelected) => `
-  text-xs transition-colors duration-150
-  ${isSelected ? "text-white/70" : "text-white/40 hover:text-white/50"}
+  text-xs
+  ${isSelected ? "text-white/70" : "text-white/40"}
 `;
 
 /**
@@ -82,10 +73,6 @@ export const getTimeClass = (isSelected) => `
  * @param {boolean} isSelected - Whether the conversation is selected
  */
 export const getBadgeClass = (isSelected) => `
-  badge badge-sm transition-all duration-150 mt-1
-  ${
-      isSelected
-          ? "bg-white/30 text-white border-white/20"
-          : "bg-white/20 text-white border-white/10 hover:bg-white/25"
-  }
+  badge badge-sm mt-1
+  ${isSelected ? "bg-white/30 text-white" : "bg-white/20 text-white"}
 `;

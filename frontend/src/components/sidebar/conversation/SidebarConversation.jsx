@@ -22,22 +22,26 @@
  * Context:
  *   - handleSelectConversation: Function to update the selected conversation, accessed via `useConversationStore`.
  *   - isSelected: Function to check if the current conversation is selected, accessed via `useConversationStore`.
+ *   - authUser: The currently authenticated user, accessed via `useAuthContext`.
  *
  * Functions:
  *   - onClickConversation:
  *       - Memoized function to handle conversation selection when clicked.
+ *   - otherUser:
+ *       - Memoized function to find the other participant in the conversation (not the current user).
  *
  * Layout:
  *   - Avatar: Displays the user's profile picture with online indicator and selection styling.
- *   - User Info: Shows the user's name and last message.
+ *   - User Info:
+ *       - Name: Displays the other participant's full name.
+ *       - Last Message: Shows the last message content or a placeholder if no messages exist.
  *   - Status:
- *       - Displays the formatted timestamp of the last message.
- *       - Shows a badge with the unread message count if applicable.
+ *       - Timestamp: Displays the formatted timestamp of the last message.
+ *       - Unread Badge: Shows a badge with the unread message count if applicable.
  *
  * Styling:
  *   - Uses shared styles from `ConversationStyles` for consistent appearance.
  *       - `getContainerClass`: Styles for the conversation container.
- *       - `getNameClass`: Styles for the user's name.
  *       - `getMessageClass`: Styles for the last message preview.
  *       - `getTimeClass`: Styles for the timestamp.
  *       - `getBadgeClass`: Styles for the unread message count badge.
@@ -52,25 +56,36 @@
  *       <SidebarConversation conversation={conversation} />
  */
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { formatMessageTime } from "../../../utils/dateUtils";
 import ConversationAvatar from "./ConversationAvatar";
 import {
     getContainerClass,
-    getNameClass,
+    // getNameClass,
     getMessageClass,
     getTimeClass,
     getBadgeClass,
 } from "../../../styles/ConversationStyles";
 import { useConversationStore } from "../../../hooks/conversation/useConversationStore";
+import { useAuthContext } from "../../../store/AuthContext";
 
 const SidebarConversation = memo(({ conversation }) => {
     const { handleSelectConversation, isSelected } = useConversationStore();
+    const { authUser } = useAuthContext();
     const isConversationSelected = isSelected(conversation._id);
 
-    // Get the other participant in the conversation (excluding the current user)
-    // This assumes participants[0] is the other user, but you may need more logic here
-    const user = conversation.participants[0];
+    // Find the other participant (not the current user) from the participants array
+    const otherUser = useMemo(() => {
+        if (!conversation.participants || !authUser)
+            return conversation.participants[0];
+
+        // Find the participant that is not the current user
+        return (
+            conversation.participants.find(
+                (participant) => participant._id !== authUser.id
+            ) || conversation.participants[0]
+        ); // Fallback to first participant if not found
+    }, [conversation.participants, authUser]);
 
     // Memoize the click handler
     const onClickConversation = useCallback(() => {
@@ -79,7 +94,7 @@ const SidebarConversation = memo(({ conversation }) => {
 
     // Get classes from shared styles
     const containerClass = getContainerClass(isConversationSelected);
-    const nameClass = getNameClass(isConversationSelected);
+    // const nameClass = getNameClass(isConversationSelected);
     const messageClass = getMessageClass(isConversationSelected);
     const timeClass = getTimeClass(isConversationSelected);
     const badgeClass = getBadgeClass(isConversationSelected);
@@ -87,18 +102,28 @@ const SidebarConversation = memo(({ conversation }) => {
     return (
         <div className={containerClass} onClick={onClickConversation}>
             <ConversationAvatar
-                user={user}
+                user={otherUser}
                 isSelected={isConversationSelected}
-                isOnline={user.isOnline || false}
+                isOnline={otherUser.isOnline || false}
             />
-            <div className="flex-1 min-w-0 transition-all duration-150 ease-in-out">
-                <h3 className={nameClass}>{user.fullName}</h3>
+            <div className="flex-1 min-w-0">
+                <h3
+                    className="font-medium text-ellipsis whitespace-nowrap overflow-hidden max-w-[180px]"
+                    title={otherUser.fullName}
+                    style={{
+                        color: isConversationSelected
+                            ? "white"
+                            : "rgba(255, 255, 255, 0.9)",
+                    }}
+                >
+                    {otherUser.fullName}
+                </h3>
                 <p className={messageClass}>
                     {conversation.lastMessage?.content ||
                         "Click to start a conversation"}
                 </p>
             </div>
-            <div className="flex flex-col items-end transition-all duration-150 ease-in-out">
+            <div className="flex flex-col items-end min-w-[50px] text-right">
                 <span className={timeClass}>
                     {conversation.lastMessage
                         ? formatMessageTime(conversation.lastMessage.createdAt)

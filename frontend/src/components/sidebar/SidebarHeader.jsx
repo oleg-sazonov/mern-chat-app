@@ -1,28 +1,29 @@
 /**
  * SidebarHeader Component
  * ----------------------
- * Displays the sidebar header with the chat title and a search input for filtering users.
+ * Displays the sidebar header with the chat title and a search input for filtering users and conversations.
  *
  * Exports:
  *   - SidebarHeader: Renders the header section of the sidebar.
  *
  * Props:
- *   - onSearch: Callback function to handle search input changes. Receives the current search term.
+ *   - onSearch (function): Callback function to handle search input changes. Receives the current search term.
  *
  * State:
- *   - searchTerm: Stores the current value of the search input.
+ *   - searchTerm (string): Stores the current value of the search input.
  *
  * Functions:
- *   - handleSearch(e)
- *     - Updates the searchTerm state and calls onSearch with the new value.
+ *   - handleSearch(e):
+ *       - Updates the `searchTerm` state with the current input value.
+ *       - Calls the `onSearch` callback with the updated value.
  *
  * Layout:
  *   - Title: Displays "Chats" as the sidebar heading.
- *   - Search Input: Allows users to filter the conversation list by name.
+ *   - Search Input: Allows users to filter conversations and users by name or username.
  *   - Search Icon: Positioned inside the input for visual feedback.
  *
  * Usage:
- *   - Used at the top of the Sidebar for quick user search and navigation.
+ *   - Used within the `Sidebar` component to provide a search bar for filtering conversations and users.
  *   - Responsive and styled for glassmorphism chat UI.
  */
 
@@ -43,7 +44,7 @@ const SidebarHeader = ({ onSearch }) => {
             <div className="relative">
                 <input
                     type="text"
-                    placeholder="Search users..."
+                    placeholder="Search by name or username..."
                     value={searchTerm}
                     onChange={handleSearch}
                     className="input input-bordered w-full py-2 pl-10 pr-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:outline-none transition-colors text-sm"
