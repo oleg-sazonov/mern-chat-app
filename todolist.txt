@@ -1,2 +1,2 @@
 1) Fix the validation. On SignUp page it works good but it provides errors on Login page with unexisting fields: "Full name is required", "Gender is required" etc.
-2) Fix the filtering bug in SidebarHeader input -> SidebarConversations. I need to search username or fullName but search by username and lastMessage.
+2) Provide offline/online styles logic into SidebarConversation -> ConversationAvatar

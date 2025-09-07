@@ -20,7 +20,7 @@
  */
 export const getContainerClass = (isSelected) => `
   flex items-center gap-3 p-2 rounded-lg cursor-pointer 
-  transition-colors duration-150
+  transition-all duration-150
   ${isSelected ? "bg-white/15" : "hover:bg-white/10"}
 `;
 
