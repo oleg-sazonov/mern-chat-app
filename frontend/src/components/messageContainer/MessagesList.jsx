@@ -8,16 +8,13 @@
  *
  * Props:
  *   - conversation (object): The selected conversation object containing details like `id` and `lastMessage`.
- *   - messages (array): Array of message objects to display (optional, defaults to an empty array).
- *       - Each message object should have the following structure:
- *           - id (string): Unique identifier for the message.
- *           - content (string): The text content of the message.
- *           - timestamp (string): The time the message was sent (ISO string).
- *           - isSentByCurrentUser (boolean): Indicates if the message was sent by the current user.
  *   - isLoading (boolean): Indicates if messages are being loaded (optional, defaults to `false`).
  *   - error (object | null): Error object if messages failed to load (optional, defaults to `null`).
  *   - receiverAvatarUrl (string): URL for the receiver's avatar.
  *   - senderAvatarUrl (string): URL for the current user's avatar.
+ *
+ * Context:
+ *   - messages (array): The list of messages for the selected conversation, accessed via `useConversationStore`.
  *
  * States:
  *   - Loading State:
@@ -46,7 +43,6 @@
  *   - Rendered in `MessageContainer.jsx`:
  *       <MessagesList
  *           conversation={selectedConversation}
- *           messages={messagesData}
  *           isLoading={isLoadingMessages}
  *           error={messagesError}
  *           receiverAvatarUrl={receiverAvatarUrl}
@@ -56,16 +52,18 @@
 
 import { memo, useEffect, useRef } from "react";
 import Message from "./Message";
+import { useConversationStore } from "../../hooks/conversation/useConversationStore";
 
 const MessagesList = memo(
     ({
         conversation,
-        messages = [],
         isLoading = false,
         error = null,
         receiverAvatarUrl,
         senderAvatarUrl,
     }) => {
+        // Get messages directly from the store to ensure they're always current
+        const { messages } = useConversationStore();
         const messagesEndRef = useRef(null);
 
         // Scroll to bottom when messages change
