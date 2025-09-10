@@ -4,27 +4,43 @@
  * Displays the list of chat messages for the selected conversation.
  *
  * Exports:
- *   - MessagesList: Renders a scrollable list of messages with loading and error states.
+ *   - MessagesList: Renders a scrollable list of messages with loading, error, and empty states.
  *
  * Props:
- *   - conversation: The selected conversation object containing details like `id` and `lastMessage`.
- *   - messages: Array of message objects (optional, defaults to an empty array).
- *   - isLoading: Boolean indicating if messages are being loaded (optional, defaults to `false`).
- *   - error: Error object if messages failed to load (optional, defaults to `null`).
+ *   - conversation (object): The selected conversation object containing details like `id` and `lastMessage`.
+ *   - messages (array): Array of message objects to display (optional, defaults to an empty array).
+ *       - Each message object should have the following structure:
+ *           - id (string): Unique identifier for the message.
+ *           - content (string): The text content of the message.
+ *           - timestamp (string): The time the message was sent (ISO string).
+ *           - isSentByCurrentUser (boolean): Indicates if the message was sent by the current user.
+ *   - isLoading (boolean): Indicates if messages are being loaded (optional, defaults to `false`).
+ *   - error (object | null): Error object if messages failed to load (optional, defaults to `null`).
+ *   - receiverAvatarUrl (string): URL for the receiver's avatar.
+ *   - senderAvatarUrl (string): URL for the current user's avatar.
+ *
+ * States:
+ *   - Loading State:
+ *       - Displays a spinner while messages are being loaded.
+ *   - Error State:
+ *       - Displays an error message and a retry button if messages fail to load.
+ *   - Empty State:
+ *       - Displays a placeholder message when no messages exist in the conversation.
+ *   - Messages List:
+ *       - Renders a list of `Message` components for each message in the `messages` array.
+ *       - Alternates between sender and receiver styles based on `isSentByCurrentUser`.
+ *
+ * Effects:
+ *   - Automatically scrolls to the bottom of the message list when new messages are added or the conversation changes.
  *
  * Layout:
- *   - Loading State: Displays a spinner while messages are loading.
- *   - Error State: Displays an error message if messages fail to load.
- *   - Chat Bubbles:
- *       - Alternates between "chat-start" (messages from the other user) and "chat-end" (messages from the current user).
+ *   - Wrapper: A scrollable container for the messages.
+ *   - Message Bubbles:
+ *       - Alternates between "chat-start" (messages from the receiver) and "chat-end" (messages from the sender).
  *       - Includes avatar, message content, and timestamp.
- *   - Sample Messages:
- *       - Displays placeholder messages for demonstration purposes.
- *       - Uses the conversation's `id` and `lastMessage` for dynamic content.
  *
  * Usage:
  *   - Used within the `MessageContainer` component to display the messages of the selected conversation.
- *   - Responsive and styled for glassmorphism chat UI.
  *
  * Example:
  *   - Rendered in `MessageContainer.jsx`:
@@ -33,35 +49,29 @@
  *           messages={messagesData}
  *           isLoading={isLoadingMessages}
  *           error={messagesError}
+ *           receiverAvatarUrl={receiverAvatarUrl}
+ *           senderAvatarUrl={senderAvatarUrl}
  *       />
  */
 
 import { memo, useEffect, useRef } from "react";
 import Message from "./Message";
-import generateSampleMessages from "../../data/sampleMessages";
 
 const MessagesList = memo(
-    ({ conversation, messages = [], isLoading = false, error = null }) => {
+    ({
+        conversation,
+        messages = [],
+        isLoading = false,
+        error = null,
+        receiverAvatarUrl,
+        senderAvatarUrl,
+    }) => {
         const messagesEndRef = useRef(null);
-        let sampleMessages = [];
 
         // Scroll to bottom when messages change
         useEffect(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, [messages, conversation?.id]);
-
-        // For now, we'll use sample messages until API integration
-        // This can be replaced with actual messages when ready
-        if (conversation) {
-            sampleMessages = generateSampleMessages(conversation);
-        }
-
-        // Use actual messages if provided, otherwise use sample messages
-        const displayMessages = messages.length > 0 ? messages : sampleMessages;
-
-        // Get avatar URLs
-        const userAvatarUrl = `https://robohash.org/user${conversation?.id}.png`;
-        const myAvatarUrl = "https://robohash.org/me.png";
+        }, [messages, conversation?._id]);
 
         if (isLoading) {
             return (
@@ -85,9 +95,24 @@ const MessagesList = memo(
             );
         }
 
+        // Display "start conversation" message if no messages exist
+        if (messages.length === 0 && !isLoading) {
+            return (
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="text-white/60 text-center">
+                        <div className="text-xl mb-2">💬</div>
+                        <p>No messages yet</p>
+                        <p className="text-sm mt-1">
+                            Type a message to start the conversation
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="flex-1 overflow-auto p-4 space-y-4">
-                {displayMessages.map((message) => (
+                {messages.map((message) => (
                     <Message
                         key={message.id}
                         message={message.content}
@@ -95,13 +120,12 @@ const MessagesList = memo(
                         isSentByCurrentUser={message.isSentByCurrentUser}
                         avatarUrl={
                             message.isSentByCurrentUser
-                                ? myAvatarUrl
-                                : userAvatarUrl
+                                ? senderAvatarUrl
+                                : receiverAvatarUrl
                         }
                     />
                 ))}
-                <div ref={messagesEndRef} />{" "}
-                {/* Empty div for scrolling to latest message */}
+                <div ref={messagesEndRef} />
             </div>
         );
     }
