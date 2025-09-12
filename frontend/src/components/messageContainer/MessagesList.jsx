@@ -93,8 +93,11 @@ const MessagesList = memo(
             );
         }
 
+        // Make sure messages is always an array before using map
+        const messagesArray = Array.isArray(messages) ? messages : [];
+
         // Display "start conversation" message if no messages exist
-        if (messages.length === 0 && !isLoading) {
+        if (messagesArray.length === 0 && !isLoading) {
             return (
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-white/60 text-center">
@@ -110,7 +113,7 @@ const MessagesList = memo(
 
         return (
             <div className="flex-1 overflow-auto p-4 space-y-4">
-                {messages.map((message) => (
+                {messagesArray.map((message) => (
                     <Message
                         key={message.id}
                         message={message.content}
@@ -128,7 +131,5 @@ const MessagesList = memo(
         );
     }
 );
-
-MessagesList.displayName = "MessagesList";
 
 export default MessagesList;

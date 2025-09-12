@@ -63,12 +63,11 @@
  *       </form>
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useConversationStore } from "../conversation/useConversationStore";
 import { showToast } from "../../utils/toastConfig";
 
 export const useMessages = (receiverData) => {
-    const [message, setMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { selectedConversation, messages, setMessages } =
         useConversationStore();
@@ -91,121 +90,45 @@ export const useMessages = (receiverData) => {
             if (!receiverId) return;
 
             try {
-                // Only show loading state and fetch messages if we don't already have them
-                // This prevents clearing messages when clicking the same conversation
-                if (messages.length === 0) {
-                    setIsLoading(true);
+                setIsLoading(true);
 
-                    // Fetch messages from API
-                    const res = await fetch(`/api/messages/${receiverId}`);
+                // Fetch messages from API
+                const res = await fetch(`/api/messages/${receiverId}`);
 
-                    if (!res.ok) {
-                        throw new Error("Failed to fetch messages");
-                    }
-
-                    const data = await res.json();
-
-                    // Transform API response to match our message format
-                    const formattedMessages = data.data.map((msg) => ({
-                        id: msg._id,
-                        content: msg.message,
-                        timestamp: msg.createdAt,
-                        isSentByCurrentUser:
-                            msg.senderId ===
-                            JSON.parse(localStorage.getItem("user") || "{}").id,
-                    }));
-
-                    setMessages(formattedMessages);
+                if (!res.ok) {
+                    throw new Error("Failed to fetch messages");
                 }
+
+                const data = await res.json();
+
+                // Transform API response to match our message format
+                const formattedMessages = data.data.map((msg) => ({
+                    id: msg._id,
+                    content: msg.message,
+                    timestamp: msg.createdAt,
+                    isSentByCurrentUser:
+                        msg.senderId ===
+                        JSON.parse(localStorage.getItem("user") || "{}").id,
+                }));
+
+                // Set messages safely
+                setMessages(
+                    Array.isArray(formattedMessages) ? formattedMessages : []
+                );
             } catch (error) {
                 console.error("Error fetching messages:", error);
                 showToast.error("Could not load messages");
+                setMessages([]);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchMessages();
-    }, [selectedConversation?._id, receiverData, setMessages, messages.length]);
-
-    // Handle message submission
-    const handleSubmit = useCallback(
-        async (e) => {
-            e.preventDefault();
-            if (!message.trim() || !receiverData?._id) return;
-
-            // Create optimistic message for immediate UI update
-            const tempId = `temp-${Date.now()}`;
-            const optimisticMessage = {
-                id: tempId,
-                content: message.trim(),
-                timestamp: new Date().toISOString(),
-                isSentByCurrentUser: true,
-            };
-
-            try {
-                // Update UI immediately
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    optimisticMessage,
-                ]);
-
-                // Clear input
-                setMessage("");
-
-                // Send message to API
-                const res = await fetch(
-                    `/api/messages/send/${receiverData._id}`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ message: message.trim() }),
-                    }
-                );
-
-                if (!res.ok) {
-                    throw new Error("Failed to send message");
-                }
-
-                // Get confirmed message from API
-                const data = await res.json();
-
-                // Replace optimistic message with confirmed message
-                setMessages((prevMessages) =>
-                    prevMessages.map((msg) =>
-                        msg.id === tempId
-                            ? {
-                                  id: data.data._id,
-                                  content: data.data.message,
-                                  timestamp: data.data.createdAt,
-                                  isSentByCurrentUser: true,
-                              }
-                            : msg
-                    )
-                );
-            } catch (error) {
-                console.error("Error sending message:", error);
-                showToast.error("Failed to send message");
-
-                // Remove failed message
-                setMessages((prevMessages) =>
-                    prevMessages.filter((msg) => msg.id !== tempId)
-                );
-            }
-        },
-        [message, receiverData, setMessages]
-    );
-
-    const handleMessageChange = useCallback((e) => {
-        setMessage(e.target.value);
-    }, []);
+    }, [selectedConversation?._id, receiverData?._id, setMessages]);
 
     return {
-        message,
         isLoading,
-        handleSubmit,
-        handleMessageChange,
+        messages: Array.isArray(messages) ? messages : [],
     };
 };

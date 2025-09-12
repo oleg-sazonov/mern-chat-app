@@ -52,7 +52,7 @@
  *       <MessageContainer className="w-3/4" />
  */
 
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import ChatHeader from "./ChatHeader";
 import MessagesList from "./MessagesList";
 import MessageInput from "./MessageInput";
@@ -60,8 +60,12 @@ import WelcomeScreen from "./WelcomeScreen";
 import { useConversationStore } from "../../hooks/conversation/useConversationStore";
 import { useReceiverData } from "../../hooks/conversation/useReceiverData";
 import { useMessages } from "../../hooks/messages/useMessages";
+import { useSendMessage } from "../../hooks/messages/useSendMessage";
 
 const MessageContainer = ({ className = "" }) => {
+    // State for message input
+    const [message, setMessage] = useState("");
+
     const { selectedConversation, setSelectedConversation, isMobile } =
         useConversationStore();
 
@@ -69,9 +73,30 @@ const MessageContainer = ({ className = "" }) => {
     const { receiverData, avatarUrl, headerData, senderAvatarUrl } =
         useReceiverData();
 
-    // Get message handling using custom hook
-    const { message, isLoading, handleSubmit, handleMessageChange } =
-        useMessages(receiverData);
+    // Get messages using useMessages hook (for fetching messages)
+    const { isLoading } = useMessages(receiverData);
+
+    // Get message sending functionality from useSendMessage hook
+    const { loading: sendingLoading, sendMessage } = useSendMessage();
+
+    // Handle message input change
+    const handleMessageChange = useCallback((e) => {
+        setMessage(e.target.value);
+    }, []);
+
+    // Handle message submission
+    const handleSubmit = useCallback(
+        (e) => {
+            e.preventDefault();
+            if (!message.trim()) return;
+
+            sendMessage(message).then(() => {
+                // Clear input after sending (only if successful)
+                setMessage("");
+            });
+        },
+        [message, sendMessage]
+    );
 
     // Handle back button click for mobile
     const handleBackClick = useCallback(() => {
@@ -100,7 +125,7 @@ const MessageContainer = ({ className = "" }) => {
                         message={message}
                         onChange={handleMessageChange}
                         onSubmit={handleSubmit}
-                        isDisabled={!receiverData || isLoading}
+                        isDisabled={!receiverData || sendingLoading}
                     />
                 </>
             ) : (
