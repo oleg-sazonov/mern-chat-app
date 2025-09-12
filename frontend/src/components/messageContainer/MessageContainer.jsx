@@ -9,6 +9,9 @@
  * Props:
  *   - className (string): Additional CSS classes for styling the container. Defaults to an empty string.
  *
+ * State:
+ *   - message (string): Stores the current input value for the message being typed.
+ *
  * Context:
  *   - selectedConversation: The currently selected conversation object, accessed via `useConversationStore`.
  *   - setSelectedConversation: Function to clear the selected conversation (used for mobile navigation).
@@ -23,14 +26,22 @@
  *           - headerData (object | null): Data for the `ChatHeader` component, including the receiver's name, username, and online status.
  *           - senderAvatarUrl (string): The avatar URL for the current user (sender).
  *   - useMessages:
- *       - Manages message input, submission, and fetching.
+ *       - Fetches and manages the state of messages for the selected conversation.
  *       - Returns:
- *           - message (string): The current input value for the message being typed.
- *           - isLoading (boolean): Indicates whether messages are being fetched or sent.
- *           - handleSubmit (function): Function to handle message submission.
- *           - handleMessageChange (function): Function to handle changes in the message input field.
+ *           - isLoading (boolean): Indicates whether messages are being fetched.
+ *           - messages (array): The list of messages for the selected conversation.
+ *   - useSendMessage:
+ *       - Handles sending messages to the receiver.
+ *       - Returns:
+ *           - sendMessage (function): Function to send a message.
+ *           - loading (boolean): Indicates whether a message is being sent.
  *
  * Functions:
+ *   - handleMessageChange(e):
+ *       - Updates the `message` state when the input field changes.
+ *   - handleSubmit(e):
+ *       - Handles the form submission for sending a message.
+ *       - Sends the message using `sendMessage` and clears the input field if successful.
  *   - handleBackClick():
  *       - Clears the selected conversation (used for mobile navigation).
  *
@@ -66,6 +77,7 @@ const MessageContainer = ({ className = "" }) => {
     // State for message input
     const [message, setMessage] = useState("");
 
+    // Get conversation state from useConversationStore
     const { selectedConversation, setSelectedConversation, isMobile } =
         useConversationStore();
 
@@ -74,7 +86,7 @@ const MessageContainer = ({ className = "" }) => {
         useReceiverData();
 
     // Get messages using useMessages hook (for fetching messages)
-    const { isLoading } = useMessages(receiverData);
+    const { isLoading, messages } = useMessages(receiverData);
 
     // Get message sending functionality from useSendMessage hook
     const { loading: sendingLoading, sendMessage } = useSendMessage();
@@ -118,6 +130,7 @@ const MessageContainer = ({ className = "" }) => {
                     <MessagesList
                         conversation={selectedConversation}
                         isLoading={isLoading}
+                        messages={messages}
                         receiverAvatarUrl={avatarUrl}
                         senderAvatarUrl={senderAvatarUrl}
                     />

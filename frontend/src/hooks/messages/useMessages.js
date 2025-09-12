@@ -3,64 +3,68 @@
  * -----------------
  * Custom hook for managing messages in a conversation.
  *
- * Exports:
- *   - useMessages: Provides message state, loading state, and functions for handling message input and submission.
+ * Purpose:
+ *   - Fetches and manages the state of messages for the currently selected conversation.
+ *   - Handles loading states and error notifications during message fetching.
  *
  * Parameters:
  *   - receiverData (object | null): The receiver's data, including:
- *       - _id (string): The receiver's unique ID.
+ *       - _id (string): The unique ID of the receiver.
  *
  * State:
- *   - message (string): The current input value for the message being typed.
- *   - isLoading (boolean): Indicates whether messages are being fetched or sent.
+ *   - isLoading (boolean): Indicates whether messages are being fetched.
  *
  * Context:
  *   - selectedConversation (object | null): The currently selected conversation, accessed via `useConversationStore`.
  *   - messages (array): The list of messages for the selected conversation, accessed via `useConversationStore`.
- *   - setMessages (function): Function to update the messages array, accessed via `useConversationStore`.
+ *   - setMessages (function): Updates the `messages` state in the `useConversationStore`.
  *
  * Functions:
  *   - fetchMessages():
  *       - Fetches messages for the selected conversation from the API.
- *       - Skips fetching for temporary conversations or if no receiver is selected.
+ *       - Clears messages if the selected conversation is temporary or invalid.
  *       - Updates the `messages` state with the fetched messages.
  *       - Handles errors and displays error notifications using `showToast`.
- *   - handleSubmit(e):
- *       - Handles message submission.
- *       - Creates an optimistic message for immediate UI feedback.
- *       - Sends the message to the API.
- *       - Replaces the optimistic message with the confirmed message from the API.
- *       - Handles errors and removes failed messages from the UI.
- *   - handleMessageChange(e):
- *       - Updates the `message` state with the current input value.
  *
  * Effects:
- *   - Fetches messages when the selected conversation changes.
+ *   - Fetches messages whenever the selected conversation or receiver changes.
  *   - Clears messages for temporary conversations or when no conversation is selected.
  *
  * Returns:
- *   - message (string): The current input value for the message being typed.
- *   - isLoading (boolean): Indicates whether messages are being fetched or sent.
- *   - handleSubmit (function): Function to handle message submission.
- *   - handleMessageChange (function): Function to handle changes in the message input field.
+ *   - isLoading (boolean): Indicates whether messages are being fetched.
+ *   - messages (array): The list of messages for the selected conversation.
  *
  * Usage:
- *   - Used in the `MessageContainer` component to manage message input, submission, and fetching.
- *
- * Example:
  *   - Import and use the hook in a component:
- *       const { message, isLoading, handleSubmit, handleMessageChange } = useMessages(receiverData);
+ *       const { isLoading, messages } = useMessages(receiverData);
  *
- *   - Render a message input field:
- *       <form onSubmit={handleSubmit}>
- *           <input
- *               type="text"
- *               value={message}
- *               onChange={handleMessageChange}
- *               placeholder="Type a message..."
- *           />
- *           <button type="submit" disabled={isLoading}>Send</button>
- *       </form>
+ *   - Example:
+ *       <MessagesList
+ *           isLoading={isLoading}
+ *           messages={messages}
+ *       />
+ *
+ * Example API Response:
+ *   - The API should return an array of messages with the following structure:
+ *       [
+ *           {
+ *               "_id": "messageId",
+ *               "message": "Hello!",
+ *               "createdAt": "2023-10-01T12:30:00.000Z",
+ *               "senderId": "userId1"
+ *           }
+ *       ]
+ *
+ * Example Transformation:
+ *   - The hook transforms the API response into the following format:
+ *       [
+ *           {
+ *               id: "messageId",
+ *               content: "Hello!",
+ *               timestamp: "2023-10-01T12:30:00.000Z",
+ *               isSentByCurrentUser: true
+ *           }
+ *       ]
  */
 
 import { useState, useEffect } from "react";

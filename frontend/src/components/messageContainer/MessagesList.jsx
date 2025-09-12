@@ -9,12 +9,10 @@
  * Props:
  *   - conversation (object): The selected conversation object containing details like `id` and `lastMessage`.
  *   - isLoading (boolean): Indicates if messages are being loaded (optional, defaults to `false`).
+ *   - messages (array): The list of messages for the selected conversation (optional, defaults to an empty array).
  *   - error (object | null): Error object if messages failed to load (optional, defaults to `null`).
  *   - receiverAvatarUrl (string): URL for the receiver's avatar.
  *   - senderAvatarUrl (string): URL for the current user's avatar.
- *
- * Context:
- *   - messages (array): The list of messages for the selected conversation, accessed via `useConversationStore`.
  *
  * States:
  *   - Loading State:
@@ -44,6 +42,7 @@
  *       <MessagesList
  *           conversation={selectedConversation}
  *           isLoading={isLoadingMessages}
+ *           messages={messages}
  *           error={messagesError}
  *           receiverAvatarUrl={receiverAvatarUrl}
  *           senderAvatarUrl={senderAvatarUrl}
@@ -52,18 +51,16 @@
 
 import { memo, useEffect, useRef } from "react";
 import Message from "./Message";
-import { useConversationStore } from "../../hooks/conversation/useConversationStore";
 
 const MessagesList = memo(
     ({
         conversation,
         isLoading = false,
+        messages = [],
         error = null,
         receiverAvatarUrl,
         senderAvatarUrl,
     }) => {
-        // Get messages directly from the store to ensure they're always current
-        const { messages } = useConversationStore();
         const messagesEndRef = useRef(null);
 
         // Scroll to bottom when messages change
