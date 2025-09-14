@@ -78,8 +78,12 @@ const MessageContainer = ({ className = "" }) => {
     const [message, setMessage] = useState("");
 
     // Get conversation state from useConversationStore
-    const { selectedConversation, setSelectedConversation, isMobile } =
-        useConversationStore();
+    const {
+        selectedConversation,
+        setSelectedConversation,
+        isMobile,
+        loading: conversationLoading,
+    } = useConversationStore();
 
     // Get receiver data using custom hook
     const { receiverData, avatarUrl, headerData, senderAvatarUrl } =
@@ -129,7 +133,7 @@ const MessageContainer = ({ className = "" }) => {
                     />
                     <MessagesList
                         conversation={selectedConversation}
-                        isLoading={isLoading}
+                        isLoading={isLoading || conversationLoading}
                         messages={messages}
                         receiverAvatarUrl={avatarUrl}
                         senderAvatarUrl={senderAvatarUrl}

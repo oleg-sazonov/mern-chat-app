@@ -49,7 +49,7 @@
  *       />
  */
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useMemo } from "react";
 import Message from "./Message";
 
 const MessagesList = memo(
@@ -63,52 +63,49 @@ const MessagesList = memo(
     }) => {
         const messagesEndRef = useRef(null);
 
+        // Make sure messages is always an array before using map
+        const messagesArray = useMemo(
+            () => (Array.isArray(messages) ? messages : []),
+            [messages]
+        );
+
         // Scroll to bottom when messages change
         useEffect(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, [messages, conversation?._id]);
+        }, [messagesArray, conversation?._id]);
 
-        if (isLoading) {
-            return (
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="loading loading-spinner loading-lg text-white/60"></div>
+        // Define all possible UI components as variables
+        const loadingSpinner = (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="loading loading-spinner loading-lg text-white/60"></div>
+            </div>
+        );
+
+        const errorMessage = (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-white/60 text-center">
+                    <div className="text-xl mb-2">⚠️</div>
+                    <p>Failed to load messages</p>
+                    <button className="btn btn-sm bg-white/20 mt-2">
+                        Try Again
+                    </button>
                 </div>
-            );
-        }
+            </div>
+        );
 
-        if (error) {
-            return (
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-white/60 text-center">
-                        <div className="text-xl mb-2">⚠️</div>
-                        <p>Failed to load messages</p>
-                        <button className="btn btn-sm bg-white/20 mt-2">
-                            Try Again
-                        </button>
-                    </div>
+        const emptyConversation = (
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-white/60 text-center">
+                    <div className="text-xl mb-2">💬</div>
+                    <p>No messages yet</p>
+                    <p className="text-sm mt-1">
+                        Type a message to start the conversation
+                    </p>
                 </div>
-            );
-        }
+            </div>
+        );
 
-        // Make sure messages is always an array before using map
-        const messagesArray = Array.isArray(messages) ? messages : [];
-
-        // Display "start conversation" message if no messages exist
-        if (messagesArray.length === 0 && !isLoading) {
-            return (
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-white/60 text-center">
-                        <div className="text-xl mb-2">💬</div>
-                        <p>No messages yet</p>
-                        <p className="text-sm mt-1">
-                            Type a message to start the conversation
-                        </p>
-                    </div>
-                </div>
-            );
-        }
-
-        return (
+        const messageList = (
             <div className="flex-1 overflow-auto p-4 space-y-4">
                 {messagesArray.map((message) => (
                     <Message
@@ -126,7 +123,26 @@ const MessagesList = memo(
                 <div ref={messagesEndRef} />
             </div>
         );
+
+        // Determine which component to render using a single return statement
+        // Priority order: Loading > Error > Empty > Messages
+        let content;
+        if (isLoading || conversation?.isLoading) {
+            // Add check for conversation.isLoading
+            content = loadingSpinner;
+        } else if (error) {
+            content = errorMessage;
+        } else if (messagesArray.length === 0) {
+            content = emptyConversation;
+        } else {
+            content = messageList;
+        }
+
+        return content;
     }
 );
+
+// Add display name for better debugging
+MessagesList.displayName = "MessagesList";
 
 export default MessagesList;

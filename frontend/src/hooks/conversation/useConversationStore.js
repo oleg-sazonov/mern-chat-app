@@ -143,12 +143,11 @@ export const useConversationStore = () => {
                 // If it's the same conversation, don't clear the messages
                 return;
             }
-
+            setLoading(true);
+            // setMessages([]);
             setSelectedConversation(conversation);
-            // Clear previous messages when selecting a new conversation
-            setMessages([]);
         },
-        [selectedConversation, setSelectedConversation, setMessages]
+        [selectedConversation, setSelectedConversation, setLoading]
     );
 
     const handleSelectUser = useCallback(

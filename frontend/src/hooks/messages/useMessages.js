@@ -78,24 +78,28 @@ export const useMessages = (receiverData) => {
 
     // Load messages when conversation changes
     useEffect(() => {
+        // Set loading state to true immediately when conversation changes
+        setIsLoading(true);
+
         const fetchMessages = async () => {
             // Skip fetching if this is a temporary conversation
             if (
                 !selectedConversation ||
                 selectedConversation._id?.startsWith("temp_")
             ) {
-                // Clear messages for new conversations or when no conversation is selected
                 setMessages([]);
+                setIsLoading(false);
                 return;
             }
 
             // Get receiverId from the participant who is not the current user
             const receiverId = receiverData?._id;
-            if (!receiverId) return;
+            if (!receiverId) {
+                setIsLoading(false);
+                return;
+            }
 
             try {
-                setIsLoading(true);
-
                 // Fetch messages from API
                 const res = await fetch(`/api/messages/${receiverId}`);
 
@@ -129,7 +133,7 @@ export const useMessages = (receiverData) => {
         };
 
         fetchMessages();
-    }, [selectedConversation?._id, receiverData?._id, setMessages]);
+    }, [selectedConversation, receiverData, setMessages]);
 
     return {
         isLoading,
