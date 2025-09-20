@@ -35,6 +35,10 @@
  *       - Returns:
  *           - sendMessage (function): Function to send a message.
  *           - loading (boolean): Indicates whether a message is being sent.
+ *   - useOnlineStatus:
+ *       - Checks if the receiver is currently online.
+ *       - Returns:
+ *           - (boolean): `true` if the receiver is online, otherwise `false`.
  *
  * Functions:
  *   - handleMessageChange(e):
@@ -72,6 +76,7 @@ import { useConversationStore } from "../../hooks/conversation/useConversationSt
 import { useReceiverData } from "../../hooks/conversation/useReceiverData";
 import { useMessages } from "../../hooks/messages/useMessages";
 import { useSendMessage } from "../../hooks/messages/useSendMessage";
+import { useOnlineStatus } from "../../hooks/socket/useOnlineStatus";
 
 const MessageContainer = ({ className = "" }) => {
     // State for message input
@@ -119,6 +124,9 @@ const MessageContainer = ({ className = "" }) => {
         setSelectedConversation(null);
     }, [setSelectedConversation]);
 
+    // Check if the receiver is online
+    const isReceiverOnline = useOnlineStatus(receiverData?._id);
+
     return (
         <div
             className={`flex-1 flex flex-col bg-white/5 backdrop-blur-md ${className}`}
@@ -130,6 +138,7 @@ const MessageContainer = ({ className = "" }) => {
                         avatarUrl={avatarUrl}
                         isMobile={isMobile}
                         onBackClick={handleBackClick}
+                        isReceiverOnline={isReceiverOnline}
                     />
                     <MessagesList
                         conversation={selectedConversation}

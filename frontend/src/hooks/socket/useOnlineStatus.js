@@ -7,14 +7,16 @@
  *   - useOnlineStatus: A function that determines whether a specific user is currently online.
  *
  * Parameters:
- *   - userId (string): The ID of the user to check online status for.
+ *   - userId (string | number): The ID of the user to check online status for.
  *
  * Returns:
  *   - (boolean): `true` if the user is online, otherwise `false`.
  *
  * Behavior:
  *   - Accesses the `onlineUsers` array from the `SocketContext`.
- *   - Memoizes the result to avoid unnecessary re-renders when the `userId` or `onlineUsers` changes.
+ *   - Converts the `onlineUsers` array into a `Set` for fast lookups.
+ *   - Normalizes both `userId` and `onlineUsers` to strings to ensure consistent comparisons.
+ *   - Memoizes the `Set` to avoid unnecessary re-computations when `onlineUsers` changes.
  *   - Returns `false` if:
  *       - `userId` is not provided.
  *       - `onlineUsers` is not an array.
@@ -39,14 +41,15 @@ import { useSocketContext } from "../../store/SocketContext";
 export const useOnlineStatus = (userId) => {
     const { onlineUsers } = useSocketContext();
 
-    // Memoize the result to avoid unnecessary re-renders
-    return useMemo(() => {
-        if (!userId || !onlineUsers || !Array.isArray(onlineUsers)) {
-            return false;
-        }
+    // Build a Set for fast lookups and normalize to strings
+    const onlineSet = useMemo(
+        () => new Set((onlineUsers || []).map(String)),
+        [onlineUsers]
+    );
 
-        return onlineUsers.includes(userId);
-    }, [userId, onlineUsers]);
+    const userIdStr = userId != null ? String(userId) : "";
+
+    return userIdStr ? onlineSet.has(userIdStr) : false;
 };
 
 export default useOnlineStatus;

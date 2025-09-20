@@ -22,7 +22,8 @@
  *       - Calls the `handleSelectUser` function from `useConversationStore`.
  *
  * Layout:
- *   - Avatar: Displays the user's profile picture with an online indicator.
+ *   - Avatar:
+ *       - Displays the user's profile picture with an online indicator.
  *   - User Info:
  *       - Name: Displays the user's full name with truncation if necessary.
  *       - Username: Displays the user's username prefixed with "@".
@@ -53,6 +54,7 @@ import {
     getTimeClass,
 } from "../../../styles/ConversationStyles";
 import { useConversationStore } from "../../../hooks/conversation/useConversationStore";
+import { useOnlineStatus } from "../../../hooks/socket/useOnlineStatus";
 import { formatJoinDate } from "../../../utils/dateUtils";
 
 const SidebarUser = memo(({ user, isSelected = false }) => {
@@ -74,12 +76,15 @@ const SidebarUser = memo(({ user, isSelected = false }) => {
         ? formatJoinDate(user.createdAt)
         : "New user";
 
+    // Check if the user is online
+    const isUserOnline = useOnlineStatus(user?._id);
+
     return (
         <div className={containerClass} onClick={onClickUser}>
             <ConversationAvatar
                 user={user}
                 isSelected={isSelected}
-                // isOnline={user.isOnline || false}
+                isOnline={isUserOnline}
             />
             <div className="flex-1 min-w-0">
                 <h3
@@ -98,7 +103,7 @@ const SidebarUser = memo(({ user, isSelected = false }) => {
             <div className="flex flex-col items-end min-w-[50px] text-right">
                 <span className={timeClass}>{joinDate}</span>
                 {/* <span className="text-xs text-white/40">
-                    {user.isOnline ? "Online" : "No chat"}
+                    {isUserOnline ? "Online" : "No chat"}
                 </span> */}
             </div>
         </div>

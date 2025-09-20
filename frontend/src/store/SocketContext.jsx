@@ -24,7 +24,12 @@
  *   - `SocketContextProvider`:
  *       - Manages the Socket.IO connection and online user state.
  *       - Listens for the `onlineUsers` event from the server to update the list of online users.
- *       - Cleans up the socket connection when the component unmounts or the current user changes.
+ *       - Cleans up the socket connection when the component unmounts or the `currentUser` changes.
+ *
+ * Behavior:
+ *   - Establishes a new Socket.IO connection when the `currentUser` changes.
+ *   - Disconnects the socket when the `currentUser` becomes null or the component unmounts.
+ *   - Updates the `onlineUsers` state when the server emits the `onlineUsers` event.
  *
  * Usage:
  *   - Wrap the application with `SocketContextProvider` to provide socket-related state and actions.
@@ -44,10 +49,11 @@
  *   - `socket.io-client`: Used to establish a Socket.IO connection.
  *   - `useCurrentUser`: Custom hook to get the current authenticated user.
  *
- * Behavior:
- *   - Establishes a new Socket.IO connection when the `currentUser` changes.
- *   - Disconnects the socket when the `currentUser` becomes null or the component unmounts.
- *   - Updates the `onlineUsers` state when the server emits the `onlineUsers` event.
+ * Implementation Details:
+ *   - Uses `useEffect` to establish and clean up the Socket.IO connection.
+ *   - Uses `useRef` to store the socket instance and avoid unnecessary re-renders.
+ *   - Listens for the `onlineUsers` event from the server to update the `onlineUsers` state.
+ *   - Automatically disconnects the socket when the `currentUser` becomes null or the component unmounts.
  */
 
 import { createContext, useContext, useState, useEffect, useRef } from "react";
@@ -78,8 +84,12 @@ export const SocketContextProvider = ({ children }) => {
         // When currentUser changes
         if (currentUser) {
             // Create a new socket connection
+            // const newSocket = io("http://localhost:5000", {
+            //     query: { userId: currentUser._id },
+            // });
             const newSocket = io("http://localhost:5000", {
-                query: { userId: currentUser._id },
+                withCredentials: true, // send httpOnly jwt cookie
+                transports: ["websocket", "polling"],
             });
             socketRef.current = newSocket;
             setSocket(newSocket);

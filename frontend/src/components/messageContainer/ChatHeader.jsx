@@ -7,22 +7,45 @@
  *   - ChatHeader: Renders the chat header with back navigation for mobile.
  *
  * Props:
- *   - conversation: The selected conversation object containing details like name and online status.
- *   - avatarUrl: The URL of the avatar image for the conversation.
- *   - isMobile: Boolean indicating if the viewport is mobile-sized (<768px).
- *   - onBackClick: Callback function to handle back navigation (used for mobile view).
+ *   - conversation (object): The selected conversation object containing:
+ *       - name (string): The name of the conversation or participant.
+ *   - avatarUrl (string): The URL of the avatar image for the conversation.
+ *   - isMobile (boolean): Indicates if the viewport is mobile-sized (<768px).
+ *   - onBackClick (function): Callback function to handle back navigation (used for mobile view).
+ *   - isReceiverOnline (boolean): Indicates whether the receiver is currently online.
  *
  * Layout:
- *   - Back Button: Displays a back button for mobile view to navigate back to the sidebar.
- *   - Avatar: Shows the conversation's avatar image.
- *   - Conversation Info: Displays the conversation's name and online status.
+ *   - Back Button:
+ *       - Displays a back button for mobile view to navigate back to the sidebar.
+ *       - Only visible when `isMobile` is true.
+ *   - Avatar:
+ *       - Shows the conversation's avatar image inside a circular container.
+ *   - Conversation Info:
+ *       - Displays the conversation's name.
+ *       - Shows the receiver's online status as "Online" or "Offline".
  *
  * Usage:
  *   - Used within the `MessageContainer` component to display the header for the selected conversation.
  *   - Responsive and styled for glassmorphism chat UI.
+ *
+ * Example:
+ *   - Rendered in `MessageContainer.jsx`:
+ *       <ChatHeader
+ *           conversation={conversation}
+ *           avatarUrl={avatarUrl}
+ *           isMobile={isMobile}
+ *           onBackClick={handleBackClick}
+ *           isReceiverOnline={isReceiverOnline}
+ *       />
  */
 
-const ChatHeader = ({ conversation, avatarUrl, isMobile, onBackClick }) => (
+const ChatHeader = ({
+    conversation,
+    avatarUrl,
+    isMobile,
+    onBackClick,
+    isReceiverOnline,
+}) => (
     <div className="p-4 border-b border-white/10 flex items-center gap-3">
         {isMobile && (
             <button
@@ -51,7 +74,7 @@ const ChatHeader = ({ conversation, avatarUrl, isMobile, onBackClick }) => (
         <div className="flex-1">
             <h3 className="text-white font-medium">{conversation.name}</h3>
             <p className="text-white/60 text-xs">
-                {conversation.isOnline ? "Online" : "Offline"}
+                {isReceiverOnline ? "Online" : "Offline"}
             </p>
         </div>
     </div>
