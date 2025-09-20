@@ -29,6 +29,8 @@
  *       - Memoized function to handle conversation selection when clicked.
  *   - otherUser:
  *       - Memoized function to find the other participant in the conversation (not the current user).
+ *   - isOtherUserOnline:
+ *       - Determines if the other participant is currently online using the `useOnlineStatus` hook.
  *
  * Layout:
  *   - Avatar: Displays the user's profile picture with online indicator and selection styling.
@@ -68,6 +70,7 @@ import {
 } from "../../../styles/ConversationStyles";
 import { useConversationStore } from "../../../hooks/conversation/useConversationStore";
 import { useAuthContext } from "../../../store/AuthContext";
+import { useOnlineStatus } from "../../../hooks/socket/useOnlineStatus";
 
 const SidebarConversation = memo(({ conversation }) => {
     const { handleSelectConversation, isSelected } = useConversationStore();
@@ -87,6 +90,9 @@ const SidebarConversation = memo(({ conversation }) => {
         ); // Fallback to first participant if not found
     }, [conversation.participants, authUser]);
 
+    // Check if the other user is online
+    const isOtherUserOnline = useOnlineStatus(otherUser?._id);
+
     // Memoize the click handler
     const onClickConversation = useCallback(() => {
         handleSelectConversation(conversation);
@@ -104,7 +110,7 @@ const SidebarConversation = memo(({ conversation }) => {
             <ConversationAvatar
                 user={otherUser}
                 isSelected={isConversationSelected}
-                isOnline={otherUser.isOnline || false}
+                isOnline={isOtherUserOnline}
             />
             <div className="flex-1 min-w-0">
                 <h3

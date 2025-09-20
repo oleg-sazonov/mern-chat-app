@@ -79,7 +79,7 @@ const SidebarUser = memo(({ user, isSelected = false }) => {
             <ConversationAvatar
                 user={user}
                 isSelected={isSelected}
-                isOnline={user.isOnline || false}
+                // isOnline={user.isOnline || false}
             />
             <div className="flex-1 min-w-0">
                 <h3

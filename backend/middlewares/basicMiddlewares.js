@@ -38,11 +38,11 @@ export const setupBasicMiddlewares = (app, NODE_ENV) => {
     app.use(cookieParser());
 
     // Logging
-    if (NODE_ENV === "production") {
-        app.use(morgan("combined"));
-    } else {
-        app.use(morgan("dev"));
-    }
+    // if (NODE_ENV === "production") {
+    //     app.use(morgan("combined"));
+    // } else {
+    //     app.use(morgan("dev"));
+    // }
 
     // Body parsing
     app.use(

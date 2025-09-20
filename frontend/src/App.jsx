@@ -11,7 +11,7 @@
  *
  * Layout:
  *   - Wraps the application with the AuthProvider to provide global authentication state.
- *   - Wraps the application with the ConversationProvider to provide global conversation state.
+ *   - Wraps the application with the SocketContextProvider to provide real-time communication state.
  *   - Uses AnimatePresence from Framer Motion to enable smooth page transitions.
  *   - Renders the Home component as the default page.
  *   - Includes Login and SignUp components for authentication routes.
@@ -19,7 +19,7 @@
  *
  * Components:
  *   - AuthProvider: Provides authentication-related state and functions to the app.
- *   - ConversationProvider: Provides conversation-related state and functions to the app.
+ *   - SocketContextProvider: Provides real-time communication state and functions to the app.
  *   - AnimatePresence: Enables animations for route transitions.
  *   - Routes: Defines the application's routing structure.
  *   - Home: The main chat interface.
@@ -31,17 +31,39 @@
  *
  * Usage:
  *   - This component is rendered in `frontend/src/main.jsx` and serves as the root of the React app.
- *   - Provides global state for authentication and conversations using the AuthProvider and ConversationProvider.
+ *   - Provides global state for authentication and real-time communication using the AuthProvider and SocketContextProvider.
  *
  * Example:
  *   - Rendered in `main.jsx`:
  *       <App />
  *
+ * ProtectedRoute Component
+ * -------------------------
+ * Protects routes that require authentication.
+ *
+ * Props:
+ *   - children: The component(s) to render if the user is authenticated.
+ *
+ * Behavior:
+ *   - If the user is authenticated (`authUser` exists), renders the children.
+ *   - If the user is not authenticated, redirects to the `/login` page.
+ *
+ * PublicRoute Component
+ * ----------------------
+ * Protects routes that should only be accessible to unauthenticated users.
+ *
+ * Props:
+ *   - children: The component(s) to render if the user is not authenticated.
+ *
+ * Behavior:
+ *   - If the user is not authenticated (`authUser` does not exist), renders the children.
+ *   - If the user is authenticated, redirects to the `/` (home) page.
  */
 
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "./store/AuthContext";
+import { SocketContextProvider } from "./store/SocketContext";
 
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
@@ -55,7 +77,9 @@ import { useAuthContext } from "./store/AuthContext";
 function App() {
     return (
         <AuthProvider>
-            <AppContent />
+            <SocketContextProvider>
+                <AppContent />
+            </SocketContextProvider>
         </AuthProvider>
     );
 }
