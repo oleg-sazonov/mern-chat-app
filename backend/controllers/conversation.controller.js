@@ -86,15 +86,16 @@ export const getConversationsWithLastMessage = async (req, res) => {
     const loggedInUserId = req.user._id;
 
     try {
-        // Fetch conversations where the logged-in user is a participant
         const conversations = await Conversation.find({
             participants: loggedInUserId,
         })
             .populate({
                 path: "messages",
-                options: { sort: { createdAt: -1 }, limit: 1 }, // Get the most recent message
+                select: "message senderId createdAt", // select only needed
+                options: { sort: { createdAt: -1 } }, // newest first
+                perDocumentLimit: 1, // IMPORTANT: 1 per conversation
                 populate: {
-                    path: "senderId receiverId", // Populate sender and receiver details
+                    path: "senderId receiverId",
                     select: "fullName username profilePicture",
                 },
             })
@@ -104,9 +105,8 @@ export const getConversationsWithLastMessage = async (req, res) => {
             })
             .lean();
 
-        // Format the response to include the last message
         const formattedConversations = conversations.map((conversation) => {
-            const lastMessage = conversation.messages[0] || null;
+            const lastMessage = conversation.messages?.[0] || null;
 
             return {
                 _id: conversation._id,
