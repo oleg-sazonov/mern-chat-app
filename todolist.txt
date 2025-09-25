@@ -1,3 +1,2 @@
 1) Fix the validation. On SignUp page it works good but it provides errors on Login page with unexisting fields: "Full name is required", "Gender is required" etc.
-2) Provide offline/online styles logic into SidebarConversation -> ConversationAvatar
-3) Now submitted message updating MessageContainer that I can see the last submitted message in MessageContainer with other messages. Now I need to update Sidebar -> SidebarConversations -> SidebarConversation -> conversation.lastMessage to see last submitted message. Now I need to reload the page to achieve it.  
+2) Provide logic to see the count of unreaded messages. (As in Telegram).
