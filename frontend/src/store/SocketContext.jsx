@@ -83,10 +83,6 @@ export const SocketContextProvider = ({ children }) => {
     useEffect(() => {
         // When currentUser changes
         if (currentUser) {
-            // Create a new socket connection
-            // const newSocket = io("http://localhost:5000", {
-            //     query: { userId: currentUser._id },
-            // });
             const newSocket = io("http://localhost:5000", {
                 withCredentials: true, // send httpOnly jwt cookie
                 transports: ["websocket", "polling"],

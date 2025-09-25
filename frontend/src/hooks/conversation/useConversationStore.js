@@ -29,11 +29,12 @@
  *   - fetchConversations():
  *       - Fetches conversations with the last messages from the `/api/conversations` endpoint.
  *       - Handles authentication errors and updates the `conversations` state.
- *   - isSelected(userId):
- *       - Checks if a given user ID matches the currently selected conversation's ID.
+ *   - normalizeConversations(list):
+ *       - Normalizes the `lastMessage` field in conversations to ensure consistent structure.
+ *   - isSelected(conversationId):
+ *       - Checks if a given conversation ID matches the currently selected conversation's ID.
  *   - handleSelectConversation(conversation):
  *       - Updates the `selectedConversation` state with the provided conversation object.
- *       - Clears previous messages when selecting a new conversation.
  *   - handleSelectUser(user):
  *       - Handles selecting a user to start a new conversation.
  *       - If a conversation already exists with the user, it selects the existing conversation.
@@ -43,6 +44,10 @@
  *   - Adds a window resize listener to update the `isMobile` state dynamically.
  *       - Removes the listener when the component unmounts.
  *   - Fetches conversations on component mount.
+ *   - Listens for real-time Socket.IO events:
+ *       - `message:new`: Appends a new message to the selected conversation.
+ *       - `conversation:updated`: Updates the `lastMessage` field for a conversation.
+ *       - `conversation:created`: Adds a new conversation to the list.
  *
  * Returns:
  *   - selectedConversation (object | null): The currently selected conversation object.
@@ -64,15 +69,15 @@
  */
 
 import useConversation from "../../store/zustand/useConversation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuthContext } from "../../store/AuthContext";
 import { showToast } from "../../utils/toastConfig";
+import { useSocketContext } from "../../store/SocketContext";
 
 export const useConversationStore = () => {
-    // Local state for API loading
     const [loading, setLoading] = useState(false);
 
-    // Get state and actions from Zustand store
+    // Zustand store state/actions
     const {
         selectedConversation,
         setSelectedConversation,
@@ -84,26 +89,58 @@ export const useConversationStore = () => {
         setConversations,
     } = useConversation();
 
-    const { setAuthUser } = useAuthContext();
+    const { setAuthUser, authUser } = useAuthContext();
+    const { socket } = useSocketContext();
 
-    // Add window resize listener (similar to what was in Home.jsx)
+    // Refs to avoid stale closures in socket handlers
+    const messagesRef = useRef(messages);
+    const selectedConversationRef = useRef(selectedConversation);
+    const conversationsRef = useRef(conversations);
+
     useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
+        messagesRef.current = messages;
+    }, [messages]);
 
+    useEffect(() => {
+        selectedConversationRef.current = selectedConversation;
+    }, [selectedConversation]);
+
+    useEffect(() => {
+        conversationsRef.current = conversations;
+    }, [conversations]);
+
+    // Window resize listener
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, [setIsMobile]);
 
-    // Function to fetch conversations with last messages
+    // Normalize conversations' lastMessage shape
+    const normalizeConversations = useCallback((list) => {
+        if (!Array.isArray(list)) return [];
+        return list.map((c) => {
+            if (!c.lastMessage) return c;
+            const lm = c.lastMessage;
+            return {
+                ...c,
+                lastMessage: {
+                    ...lm,
+                    content:
+                        (typeof lm === "string"
+                            ? lm
+                            : lm.content ?? lm.message ?? "") || "",
+                },
+            };
+        });
+    }, []);
+
+    // Fetch conversations with last messages
     const fetchConversations = useCallback(async () => {
         setLoading(true);
-
         try {
             const res = await fetch("/api/conversations");
 
-            // Check for authentication errors
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem("user");
                 setAuthUser(null);
@@ -111,76 +148,121 @@ export const useConversationStore = () => {
                 return;
             }
 
-            if (!res.ok) {
-                throw new Error("Failed to fetch conversations");
-            }
+            if (!res.ok) throw new Error("Failed to fetch conversations");
 
             const data = await res.json();
-            setConversations(data);
+            setConversations(normalizeConversations(data));
         } catch (error) {
             showToast.error(error.message || "Failed to load conversations");
             console.error("Error fetching conversations:", error);
         } finally {
             setLoading(false);
         }
-    }, [setConversations, setAuthUser]);
+    }, [setConversations, setAuthUser, normalizeConversations]);
 
-    // Fetch conversations on mount
+    // Initial load
     useEffect(() => {
-        fetchConversations(true);
+        fetchConversations();
     }, [fetchConversations]);
 
-    // Utility function to check if a conversation is selected
-    const isSelected = (userId) => {
-        return selectedConversation?._id === userId;
-    };
+    // Socket event bindings
+    useEffect(() => {
+        if (!socket) return;
 
-    // Function to handle conversation selection
+        const handleNewMessage = ({ conversationId, message }) => {
+            const currentConv = selectedConversationRef.current;
+            if (currentConv?._id === conversationId) {
+                const newMsg = {
+                    id: message.id,
+                    content: message.content,
+                    timestamp: message.createdAt,
+                    isSentByCurrentUser:
+                        message.senderId?.toString() === authUser?.id,
+                };
+                setMessages([...messagesRef.current, newMsg]);
+            }
+        };
+
+        const handleConversationUpdated = (patch) => {
+            setConversations(
+                conversationsRef.current.map((c) =>
+                    c._id === patch._id
+                        ? {
+                              ...c,
+                              lastMessage: {
+                                  ...patch.lastMessage,
+                                  content:
+                                      patch.lastMessage?.content ??
+                                      patch.lastMessage?.message ??
+                                      "",
+                              },
+                          }
+                        : c
+                )
+            );
+        };
+
+        const handleConversationCreated = (conv) => {
+            if (conversationsRef.current.find((c) => c._id === conv._id))
+                return;
+            setConversations([
+                ...conversationsRef.current,
+                {
+                    ...conv,
+                    lastMessage: conv.lastMessage
+                        ? {
+                              ...conv.lastMessage,
+                              content:
+                                  conv.lastMessage.content ??
+                                  conv.lastMessage.message ??
+                                  "",
+                          }
+                        : null,
+                },
+            ]);
+        };
+
+        socket.on("message:new", handleNewMessage);
+        socket.on("conversation:updated", handleConversationUpdated);
+        socket.on("conversation:created", handleConversationCreated);
+
+        return () => {
+            socket.off("message:new", handleNewMessage);
+            socket.off("conversation:updated", handleConversationUpdated);
+            socket.off("conversation:created", handleConversationCreated);
+        };
+    }, [socket, authUser, setMessages, setConversations]);
+
+    const isSelected = (conversationId) =>
+        selectedConversation?._id === conversationId;
+
     const handleSelectConversation = useCallback(
         (conversation) => {
-            // Check if the same conversation is being selected again
-            if (selectedConversation?._id === conversation._id) {
-                // If it's the same conversation, don't clear the messages
-                return;
-            }
+            if (selectedConversation?._id === conversation._id) return;
             setLoading(true);
-            // setMessages([]);
             setSelectedConversation(conversation);
         },
-        [selectedConversation, setSelectedConversation, setLoading]
+        [selectedConversation, setSelectedConversation]
     );
 
     const handleSelectUser = useCallback(
         async (user) => {
             setLoading(true);
-
             try {
-                // Check if there's already a conversation with this user
-                const existingConversation = conversations.find((conv) =>
-                    conv.participants.some(
-                        (participant) => participant._id === user._id
-                    )
+                const existing = conversations.find((conv) =>
+                    conv.participants.some((p) => p._id === user._id)
                 );
 
-                if (existingConversation) {
-                    // If there is an existing conversation, simply select it
-                    handleSelectConversation(existingConversation);
+                if (existing) {
+                    handleSelectConversation(existing);
                 } else {
-                    // Create a temporary conversation object for immediate UI feedback
                     const tempConversation = {
                         _id: `temp_${Date.now()}`,
                         participants: [user],
                         lastMessage: null,
                     };
-
-                    // Select this temporary conversation
                     setSelectedConversation(tempConversation);
-
-                    // Clear messages
                     setMessages([]);
-
-                    // In a real implementation, you would create a new conversation on the backend here
-                    // For now, we'll just simulate the selection
                 }
             } catch (error) {
                 showToast.error(
@@ -193,8 +275,8 @@ export const useConversationStore = () => {
         },
         [
             conversations,
-            setSelectedConversation,
             handleSelectConversation,
+            setSelectedConversation,
             setMessages,
         ]
     );

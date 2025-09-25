@@ -1,75 +1,59 @@
 /**
- * Socket.IO JWT-Authenticated Gateway (Selected Section)
- * ------------------------------------------------------
+ * Socket.IO JWT-Authenticated Gateway
+ * -----------------------------------
  * Initializes a Socket.IO server, authenticates clients via JWT from httpOnly cookies,
  * tracks online users across multiple sockets/tabs, and broadcasts online presence.
  *
- * What this code does
- * - Creates an HTTP server + Socket.IO instance with CORS configured for the Vite dev origin.
- * - Parses cookies from the WebSocket upgrade request.
- * - Verifies the `jwt` cookie using process.env.JWT_SECRET and binds `socket.userId`.
- * - Maintains a userId -> Set<socketId> map (supports multiple tabs/devices per user).
- * - On connect: adds the socket to the user's set and emits `onlineUsers` to all clients.
- * - On disconnect: removes the socket; if the user has no more sockets, removes the user and re-emits `onlineUsers`.
+ * Exports:
+ *   - `app`: The Express application instance.
+ *   - `io`: The Socket.IO server instance.
+ *   - `server`: The HTTP server instance.
+ *   - `getReceiverSocketIds`: Utility function to retrieve active socket IDs for a specific user.
  *
- * Security model
- * - Trusts identity derived server-side from the verified JWT (cookie), not from client-sent params.
- * - Tokens are created elsewhere via [`generateTokenAndSetCookie`](../utils/generateToken.js).
- * - Rejects unauthenticated connections by calling `next(new Error("Unauthorized"))` in `io.use`.
+ * Key Structures:
+ *   - `userSockets`: A `Map` that tracks active socket IDs for each user (`userId -> Set<socketId>`).
  *
- * Key structures
- * - parseCookies(cookieHeader: string) => Record<string,string>
- *   Safely parses the Cookie header into a key/value map.
+ * Features:
+ *   - JWT Authentication:
+ *       - Parses cookies from the WebSocket handshake request.
+ *       - Verifies the `jwt` cookie using `process.env.JWT_SECRET`.
+ *       - Attaches the `userId` to the socket instance upon successful authentication.
+ *   - Multi-Tab/Device Support:
+ *       - Tracks multiple active sockets for each user.
+ *   - Online Presence:
+ *       - Emits the `onlineUsers` event with the list of currently online user IDs.
+ *   - Cleanup on Disconnect:
+ *       - Removes the socket ID from the user's set.
+ *       - If no sockets remain for a user, removes the user from `userSockets`.
+ *       - Re-emits the updated `onlineUsers` list.
  *
- * - userSockets: Map<string, Set<string>>
- *   Maps a userId (string) to a set of active socket IDs. Supports multi-tab presence.
+ * Functions:
+ *   - `parseCookies(cookieHeader: string) => Record<string, string>`:
+ *       - Safely parses the `Cookie` header into a key-value map.
+ *   - `getReceiverSocketIds(userId: string) => string[]`:
+ *       - Retrieves an array of active socket IDs for a specific user.
  *
- * Events and payloads
- * - Server emits:
- *   - "onlineUsers": string[]
- *     An array of user IDs currently considered online (have ≥ 1 active socket).
+ * Events:
+ *   - Server Emits:
+ *       - `onlineUsers`: An array of user IDs currently online (have ≥ 1 active socket).
+ *   - Client Emits:
+ *       - `disconnect`: Triggered when a client disconnects.
  *
- * - Client should:
- *   - Connect with credentials enabled so cookies are sent:
- *       io("http://localhost:5000", { withCredentials: true })
- *   - Listen for "onlineUsers" to update presence. See [`useSocketContext`](../../../frontend/src/store/SocketContext.jsx).
+ * Security:
+ *   - Trusts identity derived server-side from the verified JWT (cookie-based session).
+ *   - Rejects unauthenticated connections by calling `next(new Error("Unauthorized"))` in `io.use`.
  *
- * Connection lifecycle
- * - io.use(authMiddleware):
- *     1) Parses cookies from the handshake request.
- *     2) Verifies JWT and extracts `payload.id` as `socket.userId`.
- *     3) Rejects if missing/invalid.
+ * Usage:
+ *   - Frontend:
+ *       const socket = io("http://localhost:5000", { withCredentials: true });
+ *       socket.on("onlineUsers", (ids) => setOnlineUsers(ids));
  *
- * - io.on("connection", socket):
- *     1) Adds socket.id to userSockets[userId].
- *     2) Broadcasts `onlineUsers` to all clients.
- *     3) On "disconnect":
- *         - Removes socket.id from the user's set.
- *         - If the set is empty, removes the userId.
- *         - Broadcasts `onlineUsers` again.
- *
- * CORS
- * - Configured to allow origin http://localhost:5173 with credentials for local development.
- * - Ensure the HTTP app also allows credentials if using REST + cookies.
- *
- * Error handling
- * - Auth errors during handshake propagate as "Unauthorized" and the connection is rejected.
- * - Disconnect cleanup is resilient even if maps/sets are missing.
- *
- * Best practices embodied here
- * - Derive identity from server-verified JWT (cookie-based session) instead of trusting client-sent IDs.
- * - Track multiple sockets per user to represent true presence across tabs/devices.
- * - Emit presence changes only when they actually change (connect/disconnect).
- *
- * Integration tips
- * - Frontend:
- *     const socket = io("http://localhost:5000", { withCredentials: true });
- *     socket.on("onlineUsers", (ids) => setOnlineUsers(ids));
- *   See: [`useSocketContext`](../../../frontend/src/store/SocketContext.jsx)
- *
- * - Backend boot:
- *   This module exports { app, io, server } and is imported by [backend/app.js](../app.js)
- *   where the Express middlewares and routes are mounted on the same `app` instance.
+ * Example Workflow:
+ *   1. Client connects with a valid JWT cookie.
+ *   2. Server verifies the JWT and attaches the `userId` to the socket.
+ *   3. The socket is added to the `userSockets` map.
+ *   4. The server emits the updated `onlineUsers` list to all clients.
+ *   5. On disconnect, the socket is removed, and the `onlineUsers` list is updated.
  */
 
 import { Server } from "socket.io";
@@ -103,6 +87,10 @@ const parseCookies = (cookieHeader = "") =>
             })
             .filter(Boolean)
     );
+
+export const getReceiverSocketIds = (userId) => {
+    return Array.from(userSockets.get(userId) || []);
+};
 
 // userId -> Set<socketId>
 const userSockets = new Map();
