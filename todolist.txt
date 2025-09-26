@@ -1,2 +1,2 @@
 1) Fix the validation. On SignUp page it works good but it provides errors on Login page with unexisting fields: "Full name is required", "Gender is required" etc.
-2) Provide logic to see the count of unreaded messages. (As in Telegram).
+2) Fix SidebarFooter to get just Logout button.

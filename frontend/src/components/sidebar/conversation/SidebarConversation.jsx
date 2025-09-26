@@ -136,8 +136,17 @@ const SidebarConversation = memo(({ conversation }) => {
                         : "New"}
                 </span>
                 {conversation.unreadCount > 0 && (
-                    <span className={badgeClass}>
-                        {conversation.unreadCount}
+                    <span
+                        className={badgeClass}
+                        aria-label={`${conversation.unreadCount} unread messages`}
+                        title={`${conversation.unreadCount} unread messages`}
+                    >
+                        {
+                            // Telegram-like capping
+                            conversation.unreadCount > 99
+                                ? "99+"
+                                : conversation.unreadCount
+                        }
                     </span>
                 )}
             </div>

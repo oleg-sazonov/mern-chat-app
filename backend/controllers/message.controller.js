@@ -23,11 +23,14 @@
  *   2. If no conversation exists, creates a new one with both participants.
  *   3. Creates a new message document in the database.
  *   4. Adds the new message's ID to the conversation's messages array and saves the conversation.
- *   5. Emits real-time events via Socket.IO:
+ *   5. Updates the `reads` array:
+ *        - Ensures both sender and receiver have read entries.
+ *        - Increments the receiver's `unreadCount`.
+ *   6. Emits real-time events via Socket.IO:
  *        - `message:new`: Sends the new message to both sender and receiver.
- *        - `conversation:updated`: Updates the last message in the conversation for both users.
+ *        - `conversation:updated`: Updates the last message and unread count for both users.
  *        - `conversation:created`: Notifies both users if a new conversation is created.
- *   6. Responds with the created message and a success message.
+ *   7. Responds with the created message and a success message.
  *
  * Responses:
  *   - 201: Message sent successfully, returns the new message data.
@@ -42,11 +45,13 @@
  *       - Payload:
  *           - _id: The conversation ID.
  *           - lastMessage: The updated last message object (content, sender, createdAt).
+ *           - unreadCount: The updated unread count for the user.
  *   - `conversation:created` (only for new conversations):
  *       - Payload:
  *           - _id: The conversation ID.
  *           - participants: The participants of the conversation.
  *           - lastMessage: The last message object.
+ *           - unreadCount: The unread count for the user.
  *
  * getMessages(req, res)
  * ---------------------
@@ -97,9 +102,16 @@ export const sendMessage = async (req, res) => {
         const isNewConversation = !conversation;
 
         if (!conversation) {
-            // Create a new conversation if it doesn't exist
             conversation = await Conversation.create({
                 participants: [senderId, receiverId],
+                reads: [
+                    {
+                        userId: senderId,
+                        lastReadAt: new Date(),
+                        unreadCount: 0,
+                    },
+                    { userId: receiverId, lastReadAt: null, unreadCount: 0 },
+                ],
             });
         }
 
@@ -108,54 +120,81 @@ export const sendMessage = async (req, res) => {
             receiverId,
             message,
         });
-
-        if (!newMessage) {
+        if (!newMessage)
             return res.status(500).json({ message: "Failed to send message" });
-        } else {
-            // Add message to conversation
-            conversation.messages.push(newMessage._id);
-            await conversation.save();
 
-            // ---- SOCKET.IO EMITS (REAL-TIME) ----
-            // Minimal message DTO
-            const messageDTO = {
-                id: newMessage._id,
-                content: newMessage.message,
-                senderId: newMessage.senderId,
-                receiverId: newMessage.receiverId,
-                createdAt: newMessage.createdAt,
-            };
+        conversation.messages.push(newMessage._id);
 
-            // Sidebar lastMessage summary
-            const conversationUpdate = {
+        // Ensure read entries exist
+        conversation.reads = conversation.reads || [];
+        const ensureRead = (uid) => {
+            if (
+                !conversation.reads.find(
+                    (r) => r.userId.toString() === uid.toString()
+                )
+            ) {
+                conversation.reads.push({
+                    userId: uid,
+                    lastReadAt: null,
+                    unreadCount: 0,
+                });
+            }
+        };
+        ensureRead(senderId);
+        ensureRead(receiverId);
+
+        // Increment receiver unread; sender stays the same (optionally mark sender read now)
+        const recvEntry = conversation.reads.find(
+            (r) => r.userId.toString() === receiverId.toString()
+        );
+        recvEntry.unreadCount = (recvEntry.unreadCount || 0) + 1;
+
+        await conversation.save();
+
+        // Real-time emits
+        const messageDTO = {
+            id: newMessage._id,
+            content: newMessage.message,
+            senderId: newMessage.senderId,
+            receiverId: newMessage.receiverId,
+            createdAt: newMessage.createdAt,
+        };
+
+        // Send a user-specific unreadCount in the patch
+        const patchFor = (uid) => {
+            const entry = conversation.reads.find(
+                (r) => r.userId.toString() === uid.toString()
+            );
+            return {
                 _id: conversation._id,
                 lastMessage: {
                     content: newMessage.message,
                     sender: senderId,
                     createdAt: newMessage.createdAt,
                 },
+                unreadCount: entry?.unreadCount || 0,
             };
+        };
 
-            // Emit to sender + receiver (target only their active sockets)
-            const targetUserIds = [senderId.toString(), receiverId.toString()];
-            for (const uid of targetUserIds) {
-                const sockets = getReceiverSocketIds(uid); // Set<socketId> → array
-                sockets.forEach((sid) => {
-                    io.to(sid).emit("message:new", {
-                        conversationId: conversation._id,
-                        message: messageDTO,
-                    });
-                    io.to(sid).emit("conversation:updated", conversationUpdate);
-                    if (isNewConversation) {
-                        io.to(sid).emit("conversation:created", {
-                            _id: conversation._id,
-                            participants: conversation.participants,
-                            lastMessage: conversationUpdate.lastMessage,
-                        });
-                    }
+        [senderId.toString(), receiverId.toString()].forEach((uid) => {
+            const sockets = getReceiverSocketIds(uid);
+            sockets.forEach((sid) => {
+                io.to(sid).emit("message:new", {
+                    conversationId: conversation._id,
+                    message: messageDTO,
                 });
-            }
-        }
+                io.to(sid).emit("conversation:updated", patchFor(uid));
+                if (isNewConversation) {
+                    io.to(sid).emit("conversation:created", {
+                        _id: conversation._id,
+                        participants: conversation.participants,
+                        lastMessage: patchFor(uid).lastMessage,
+                        unreadCount: patchFor(uid).unreadCount,
+                    });
+                }
+            });
+        });
+
         res.status(201).json({
             message: "Message sent successfully",
             data: newMessage,

@@ -29,10 +29,15 @@
  *   - handleSelectConversation(conversation):
  *       - Updates the `selectedConversation` state with the provided conversation object.
  *       - Prevents re-selection if the conversation is already selected.
+ *       - Marks the conversation as read by sending a request to the server.
+ *       - Optimistically clears the unread badge for the conversation.
  *   - handleSelectUser(user):
  *       - Handles selecting a user to start a new conversation.
  *       - If a conversation already exists with the user, it selects the existing conversation.
  *       - If no conversation exists, it creates a temporary conversation for immediate UI feedback.
+ *   - markConversationRead(conversationId):
+ *       - Marks a conversation as read by sending a request to the server.
+ *       - Optimistically clears the unread badge for the conversation.
  *
  * Effects:
  *   - Initializes side effects:
@@ -55,6 +60,7 @@
  *   - setMessages (function): Function to update the messages array.
  *   - isMobile (boolean): Indicates if the viewport is mobile-sized.
  *   - handleSelectUser (function): Function to handle selecting a user for a new conversation.
+ *   - markConversationRead (function): Function to mark a conversation as read.
  *   - refreshConversations (function): Function to manually refresh conversations.
  *
  * Usage:
@@ -91,14 +97,51 @@ export const useConversationStore = () => {
     const isSelected = (conversationId) =>
         selectedConversation?._id === conversationId;
 
+    // const handleSelectConversation = useCallback(
+    //     (conversation) => {
+    //         if (selectedConversation?._id === conversation._id) return;
+    //         setLoading(true);
+    //         setSelectedConversation(conversation);
+    //         setLoading(false);
+    //     },
+    //     [selectedConversation, setSelectedConversation]
+    // );
+
     const handleSelectConversation = useCallback(
-        (conversation) => {
+        async (conversation) => {
             if (selectedConversation?._id === conversation._id) return;
-            setLoading(true);
             setSelectedConversation(conversation);
-            setLoading(false);
+
+            // Mark as read (ignore errors to keep UI snappy)
+            if (conversation?._id && !conversation._id.startsWith("temp_")) {
+                try {
+                    await fetch(`/api/conversations/${conversation._id}/read`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                    });
+                } catch (err) {
+                    // Intentionally ignore; remote state will reconcile via socket
+                    console.debug(
+                        "markConversationRead failed (ignored):",
+                        err
+                    );
+                }
+                // Optimistically clear unread badge
+                setConversations(
+                    (conversations || []).map((c) =>
+                        c._id === conversation._id
+                            ? { ...c, unreadCount: 0 }
+                            : c
+                    )
+                );
+            }
         },
-        [selectedConversation, setSelectedConversation]
+        [
+            selectedConversation,
+            setSelectedConversation,
+            setConversations,
+            conversations,
+        ]
     );
 
     const handleSelectUser = useCallback(
@@ -137,6 +180,29 @@ export const useConversationStore = () => {
         ]
     );
 
+    const markConversationRead = useCallback(
+        async (conversationId) => {
+            if (!conversationId || conversationId.startsWith("temp_")) return;
+
+            // Optimistically clear unread badge
+            setConversations(
+                (conversations || []).map((c) =>
+                    c._id === conversationId ? { ...c, unreadCount: 0 } : c
+                )
+            );
+
+            try {
+                await fetch(`/api/conversations/${conversationId}/read`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                });
+            } catch {
+                // ignore (socket/next server patch will reconcile)
+            }
+        },
+        [setConversations, conversations]
+    );
+
     return {
         selectedConversation,
         conversations,
@@ -149,6 +215,7 @@ export const useConversationStore = () => {
         setMessages,
         isMobile,
         handleSelectUser,
+        markConversationRead,
         refreshConversations: () => fetchConversations(false),
     };
 };

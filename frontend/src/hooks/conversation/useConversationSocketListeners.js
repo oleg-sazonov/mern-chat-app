@@ -24,9 +24,11 @@
  *   - `message:new`:
  *       - Triggered when a new message is sent in a conversation.
  *       - Appends the new message to the `messages` state if the conversation is currently selected.
+ *       - Increments the `unreadCount` for other conversations.
  *   - `conversation:updated`:
  *       - Triggered when a conversation's last message is updated.
  *       - Updates the `lastMessage` field for the corresponding conversation in the `conversations` state.
+ *       - Keeps `unreadCount` at 0 for the currently selected conversation.
  *   - `conversation:created`:
  *       - Triggered when a new conversation is created.
  *       - Adds the new conversation to the `conversations` state if it doesn't already exist.
@@ -34,9 +36,11 @@
  * Behavior:
  *   - Uses refs (`messagesRef`, `selectedConversationRef`, `conversationsRef`) to avoid stale closures in event handlers.
  *   - Ensures that state updates are consistent and do not overwrite the latest data.
+ *   - Debounces server-side `mark-as-read` requests to prevent excessive API calls.
  *
  * Cleanup:
  *   - Removes all Socket.IO event listeners when the component using the hook unmounts or when the `socket` instance changes.
+ *   - Clears any pending `mark-as-read` timers.
  *
  * Usage:
  *   - Import and use this hook in components or other hooks to enable real-time updates for conversations and messages.
@@ -68,6 +72,7 @@ export const useConversationSocketListeners = () => {
     const messagesRef = useRef(messages);
     const selectedConversationRef = useRef(selectedConversation);
     const conversationsRef = useRef(conversations);
+    const markReadTimersRef = useRef(new Map());
 
     useEffect(() => {
         messagesRef.current = messages;
@@ -82,6 +87,35 @@ export const useConversationSocketListeners = () => {
     useEffect(() => {
         if (!socket) return;
 
+        // Debounced server mark-as-read to keep unreadCount at 0 on the server too
+        const scheduleMarkAsRead = (conversationId) => {
+            if (!conversationId) return;
+            const timers = markReadTimersRef.current;
+            const existing = timers.get(conversationId);
+            if (existing) clearTimeout(existing);
+
+            const t = setTimeout(async () => {
+                // Optimistically ensure 0 on client list
+                setConversations(
+                    (conversationsRef.current || []).map((c) =>
+                        c._id === conversationId ? { ...c, unreadCount: 0 } : c
+                    )
+                );
+                try {
+                    await fetch(`/api/conversations/${conversationId}/read`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                    });
+                } catch {
+                    // ignore; next server patch will reconcile
+                } finally {
+                    timers.delete(conversationId);
+                }
+            }, 250);
+
+            timers.set(conversationId, t);
+        };
+
         const handleNewMessage = ({ conversationId, message }) => {
             const currentConv = selectedConversationRef.current;
             if (currentConv?._id === conversationId) {
@@ -93,25 +127,67 @@ export const useConversationSocketListeners = () => {
                         message.senderId?.toString() === authUser?.id,
                 };
                 setMessages([...messagesRef.current, newMsg]);
+
+                // If it's an incoming message while this conversation is open,
+                // mark it as read on the server so unreadCount doesn't accumulate.
+                const isIncoming =
+                    message.senderId?.toString() !== authUser?.id;
+                if (
+                    isIncoming &&
+                    currentConv._id &&
+                    !currentConv._id.startsWith("temp_")
+                ) {
+                    scheduleMarkAsRead(conversationId);
+                }
+            } else {
+                // Fallback increment to avoid missed badges if server patch is delayed
+                setConversations(
+                    conversationsRef.current.map((c) =>
+                        c._id === conversationId
+                            ? {
+                                  ...c,
+                                  lastMessage: {
+                                      content: message.content,
+                                      createdAt: message.createdAt,
+                                      sender: { _id: message.senderId },
+                                  },
+                                  unreadCount: (c.unreadCount || 0) + 1,
+                              }
+                            : c
+                    )
+                );
             }
         };
 
         const handleConversationUpdated = (patch) => {
             setConversations(
-                conversationsRef.current.map((c) =>
-                    c._id === patch._id
-                        ? {
-                              ...c,
-                              lastMessage: {
+                conversationsRef.current.map((c) => {
+                    if (c._id !== patch._id) return c;
+
+                    const isCurrentSelected =
+                        selectedConversationRef.current?._id === patch._id;
+
+                    return {
+                        ...c,
+                        lastMessage: patch.lastMessage
+                            ? {
                                   ...patch.lastMessage,
                                   content:
-                                      patch.lastMessage?.content ??
-                                      patch.lastMessage?.message ??
+                                      patch.lastMessage.content ??
+                                      patch.lastMessage.message ??
                                       "",
-                              },
-                          }
-                        : c
-                )
+                              }
+                            : c.lastMessage,
+                        // Keep 0 for currently selected conversation
+                        ...(typeof patch.unreadCount === "number"
+                            ? {
+                                  unreadCount: isCurrentSelected
+                                      ? 0
+                                      : patch.unreadCount,
+                              }
+                            : {}),
+                    };
+                })
             );
         };
 
@@ -143,6 +219,10 @@ export const useConversationSocketListeners = () => {
             socket.off("message:new", handleNewMessage);
             socket.off("conversation:updated", handleConversationUpdated);
             socket.off("conversation:created", handleConversationCreated);
+
+            // Clear any pending timers
+            markReadTimersRef.current.forEach((t) => clearTimeout(t));
+            markReadTimersRef.current.clear();
         };
     }, [socket, authUser, setMessages, setConversations]);
 };

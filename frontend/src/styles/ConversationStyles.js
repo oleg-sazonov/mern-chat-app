@@ -73,6 +73,6 @@ export const getTimeClass = (isSelected) => `
  * @param {boolean} isSelected - Whether the conversation is selected
  */
 export const getBadgeClass = (isSelected) => `
-  badge badge-sm mt-1
+  badge badge-sm mt-1 border-0 shadow-none
   ${isSelected ? "bg-white/30 text-white" : "bg-white/20 text-white"}
 `;
