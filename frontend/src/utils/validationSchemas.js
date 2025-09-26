@@ -1,11 +1,14 @@
 /**
- * signupSchema
- * ------------
- * Validation schema for user signup form inputs.
+ * Validation Schemas
+ * ------------------
+ * Provides Yup validation schemas for user authentication forms.
  *
  * Exports:
- *   - signupSchema: A Yup schema for validating signup form data.
+ *   - signupSchema: Validation schema for user signup form inputs.
+ *   - loginSchema: Validation schema for user login form inputs.
  *
+ * signupSchema
+ * ------------
  * Fields:
  *   - fullName:
  *       - Type: string
@@ -77,8 +80,33 @@
  *       - Error Messages:
  *           - "Profile picture must be a valid URL."
  *
+ * loginSchema
+ * -----------
+ * Fields:
+ *   - username:
+ *       - Type: string
+ *       - Validation:
+ *           - Required.
+ *           - Minimum 3 characters.
+ *           - Maximum 30 characters.
+ *       - Error Messages:
+ *           - "Username is required."
+ *           - "Username must be at least 3 characters."
+ *           - "Username must not exceed 30 characters."
+ *
+ *   - password:
+ *       - Type: string
+ *       - Validation:
+ *           - Required.
+ *           - Minimum 6 characters.
+ *           - Maximum 100 characters.
+ *       - Error Messages:
+ *           - "Password is required."
+ *           - "Password must be at least 6 characters."
+ *           - "Password must not exceed 100 characters."
+ *
  * Usage:
- *   - Used in `SignUp.jsx` to validate user inputs before form submission.
+ *   - Used in `SignUp.jsx` and `Login.jsx` to validate user inputs before form submission.
  *
  * Example:
  *   - Validating signup inputs:
@@ -89,6 +117,12 @@
  *           confirmPassword: "Password123!",
  *           gender: "male",
  *           profilePicture: "https://example.com/avatar.png",
+ *       });
+ *
+ *   - Validating login inputs:
+ *       const result = await loginSchema.validate({
+ *           username: "johndoe",
+ *           password: "Password123!",
  *       });
  */
 
@@ -131,4 +165,15 @@ export const signupSchema = Yup.object().shape({
     profilePicture: Yup.string()
         .url("Profile picture must be a valid URL")
         .notRequired(),
+});
+
+export const loginSchema = Yup.object().shape({
+    username: Yup.string()
+        .required("Username is required")
+        .min(3, "Username must be at least 3 characters")
+        .max(30, "Username must not exceed 30 characters"),
+    password: Yup.string()
+        .required("Password is required")
+        .min(6, "Password must be at least 6 characters")
+        .max(100, "Password must not exceed 100 characters"),
 });

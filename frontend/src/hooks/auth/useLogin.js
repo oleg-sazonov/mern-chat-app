@@ -11,7 +11,7 @@
  *
  * Functions:
  *   - handleLogin:
- *       - Validates inputs using `validateAuthInputs`.
+ *       - Validates inputs using `validateLoginInputs`.
  *       - Sends a POST request to the `/api/auth/login` endpoint with the user credentials.
  *       - Displays a loading toast while the request is in progress.
  *       - Displays a success toast on successful login.
@@ -44,7 +44,7 @@ import { useState } from "react";
 import { showToast, dismissToast } from "../../utils/toastConfig";
 import { setStorageItem } from "../../utils/storage";
 import { useAuthContext } from "../../store/AuthContext";
-import { validateAuthInputs } from "../../utils/validationUtils";
+import { validateLoginInputs } from "../../utils/validationUtils";
 import { apiRequest } from "../../utils/apiUtils";
 
 const useLogin = () => {
@@ -52,7 +52,7 @@ const useLogin = () => {
     const { setAuthUser } = useAuthContext();
 
     const handleLogin = async ({ username, password }) => {
-        const isValid = await validateAuthInputs({ username, password });
+        const isValid = await validateLoginInputs({ username, password });
 
         if (!isValid) return;
 
