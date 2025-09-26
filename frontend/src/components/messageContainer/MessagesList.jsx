@@ -62,6 +62,7 @@ const MessagesList = memo(
         senderAvatarUrl,
     }) => {
         const messagesEndRef = useRef(null);
+        const newMarkerRef = useRef(null);
 
         // Make sure messages is always an array before using map
         const messagesArray = useMemo(
@@ -69,10 +70,39 @@ const MessagesList = memo(
             [messages]
         );
 
-        // Scroll to bottom when messages change
+        const unreadCount = conversation?.unreadCount || 0;
+
+        // Compute first unread index from unreadCount
+        const firstUnreadIndex = useMemo(() => {
+            if (!unreadCount || !messagesArray.length) return -1;
+            const idx = messagesArray.length - unreadCount;
+            return Math.max(0, Math.min(idx, messagesArray.length - 1));
+        }, [messagesArray.length, unreadCount]);
+
+        // Scroll behavior:
+        // - If there are unread messages: jump to the "New messages" divider (no smooth)
+        // - Else: scroll to bottom (smooth only for own outgoing message)
         useEffect(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, [messagesArray, conversation?._id]);
+            if (!messagesArray.length) return;
+
+            if (firstUnreadIndex >= 0 && newMarkerRef.current) {
+                newMarkerRef.current.scrollIntoView({
+                    behavior: "auto",
+                    block: "start",
+                });
+                return;
+            }
+
+            const last = messagesArray[messagesArray.length - 1];
+            messagesEndRef.current?.scrollIntoView({
+                behavior: last?.isSentByCurrentUser ? "smooth" : "auto",
+            });
+        }, [messagesArray, firstUnreadIndex, conversation?._id]);
+
+        // Scroll to bottom when messages change
+        // useEffect(() => {
+        //     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        // }, [messagesArray, conversation?._id]);
 
         // Define all possible UI components as variables
         const loadingSpinner = (
@@ -107,18 +137,27 @@ const MessagesList = memo(
 
         const messageList = (
             <div className="flex-1 overflow-auto p-4 space-y-4">
-                {messagesArray.map((message) => (
-                    <Message
-                        key={message.id}
-                        message={message.content}
-                        timestamp={message.timestamp}
-                        isSentByCurrentUser={message.isSentByCurrentUser}
-                        avatarUrl={
-                            message.isSentByCurrentUser
-                                ? senderAvatarUrl
-                                : receiverAvatarUrl
-                        }
-                    />
+                {messagesArray.map((message, idx) => (
+                    <div key={message.id}>
+                        {firstUnreadIndex === idx && unreadCount > 0 && (
+                            <div
+                                ref={newMarkerRef}
+                                className="divider text-white/60 text-xs"
+                            >
+                                New messages
+                            </div>
+                        )}
+                        <Message
+                            message={message.content}
+                            timestamp={message.timestamp}
+                            isSentByCurrentUser={message.isSentByCurrentUser}
+                            avatarUrl={
+                                message.isSentByCurrentUser
+                                    ? senderAvatarUrl
+                                    : receiverAvatarUrl
+                            }
+                        />
+                    </div>
                 ))}
                 <div ref={messagesEndRef} />
             </div>
