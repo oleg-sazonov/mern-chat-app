@@ -20,6 +20,10 @@
  *   - noResultsMessage (string): The message to display when no matches are found.
  *   - isSearching (boolean): Indicates whether the user is actively searching.
  *
+ * Effects:
+ *   - Resets conversation state when the authenticated user changes.
+ *   - Hydrates conversations with incomplete participant data by refetching them.
+ *
  * Layout:
  *   - If `loading` is true:
  *       - Displays a loading spinner centered in the sidebar.
@@ -48,7 +52,7 @@
  *       <SidebarConversations searchTerm={searchTerm} />
  */
 
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import SidebarConversation from "./conversation/SidebarConversation";
 import SidebarUser from "./user/SidebarUser";
 import { useConversationStore } from "../../hooks/conversation/useConversationStore";
@@ -61,9 +65,42 @@ const SidebarConversations = memo(({ searchTerm = "" }) => {
         conversations,
         loading: conversationsLoading,
         selectedConversation,
+        setConversations,
+        setSelectedConversation,
+        setMessages,
+        refreshConversations,
     } = useConversationStore();
     const { users, loading: usersLoading } = useUserStore();
     const { authUser } = useAuthContext();
+
+    // Reset on user switch; useConversationsFetch will refetch when length === 0
+    useEffect(() => {
+        setSelectedConversation(null);
+        setMessages([]);
+        setConversations([]);
+    }, [authUser?.id, setSelectedConversation, setMessages, setConversations]);
+
+    // Hydrate if any conversation has incomplete participant data (IDs only or missing names)
+    useEffect(() => {
+        if (!Array.isArray(conversations) || conversations.length === 0) return;
+
+        const needsHydration = conversations.some(
+            (c) =>
+                !Array.isArray(c.participants) ||
+                c.participants.length === 0 ||
+                c.participants.some(
+                    (p) =>
+                        !p ||
+                        typeof p === "string" ||
+                        !p._id ||
+                        (!p.fullName && !p.username)
+                )
+        );
+
+        if (needsHydration) {
+            refreshConversations();
+        }
+    }, [conversations, refreshConversations]);
 
     const loading = conversationsLoading || usersLoading;
 

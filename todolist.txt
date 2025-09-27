@@ -1,2 +1,14 @@
-1) Incorrect behavior. When one user logout and then another user login I've got bugs in SidebarConversations. After reload page everything becomes okay.
-    * Conversations are not refetched after user switch because the store still contains the old list (length > 0), and selectedConversation is not cleared.
+1) When new user writes message to current user I've got incorrect SidebarConversation behavior. Component shows wrong info.
+    a - wrong avatar;
+    b - fullName doesn't exist;
+    c - time correct;
+    d - lastMessageCorrect;
+    e - online/offline status doesn't exist.
+    MessageContainer with this SidebarConversation also has incorrect data (messages). 
+    ChatHeader conversation.name doesn't exist.
+    ChatHeader avatarUrl isn't correct.
+    ChatHeader isReceiverOnline isn't correct.
+    Also, if I select this SidebarConversation and get a newMessage from this conversation, I've got it in MessageContainer but if I choose another conversation and then back to previous one I'll got the same wrong data in MessageContainer without lastMessage.
+    If I'll reload page I'll get correct behavior and correct SidebarConversation as well as MessageContainer data. 
+
+    // maybe fixed

@@ -1,10 +1,10 @@
 /**
  * SidebarFooter Component
- * ----------------------
- * Displays the current user's avatar, username, and a dropdown menu in the sidebar.
+ * -----------------------
+ * Displays the current user's avatar, username, and a logout button in the sidebar footer.
  *
  * Exports:
- *   - SidebarFooter: Renders the user info and menu at the bottom of the sidebar.
+ *   - SidebarFooter: Renders user information and a logout button.
  *
  * Context:
  *   - useLogout: Provides the `handleLogout` function and `loading` state for managing user logout functionality.
@@ -18,13 +18,13 @@
  * Layout:
  *   - Avatar: Displays the user's profile picture or a placeholder if unavailable.
  *   - User Info: Shows the user's full name (or username as a fallback).
- *   - Dropdown Menu: Provides options for Profile, Settings, and Logout.
+ *   - Logout Button: A button to log out the user, with a loading spinner during the logout process.
  *
  * Functions:
  *   - handleLogout: Logs the user out and clears authentication state.
  *
  * Usage:
- *   - Used at the bottom of the Sidebar for persistent user info and actions.
+ *   - Used at the bottom of the Sidebar for persistent user info and logout functionality.
  *   - Responsive and styled for glassmorphism chat UI.
  *
  * Example:
