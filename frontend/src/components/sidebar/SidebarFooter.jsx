@@ -85,7 +85,7 @@ const SidebarFooter = () => {
                     </p>
                 )}
             </div>
-            <div className="dropdown dropdown-top dropdown-end">
+            {/* <div className="dropdown dropdown-top dropdown-end">
                 <div
                     tabIndex={0}
                     role="button"
@@ -125,6 +125,36 @@ const SidebarFooter = () => {
                         )}
                     </li>
                 </ul>
+            </div> */}
+            <div className="ml-auto">
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    disabled={logoutLoading}
+                    aria-label="Logout"
+                    title="Logout"
+                    className="btn btn-circle btn-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
+                >
+                    {logoutLoading ? (
+                        <span className="loading loading-spinner loading-xs"></span>
+                    ) : (
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M10 17l5-5-5-5" />
+                            <path d="M15 12H3" />
+                            <path d="M21 19a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2" />
+                        </svg>
+                    )}
+                </button>
             </div>
         </div>
     );
