@@ -1,10 +1,10 @@
 /**
  * SidebarConversations Component
  * ------------------------------
- * Renders a list of user conversations and search results in the sidebar.
+ * Displays a list of conversations and users in the sidebar, filtered by a search term.
  *
  * Exports:
- *   - SidebarConversations: Displays conversations and user search results.
+ *   - SidebarConversations: Renders conversations and user search results.
  *
  * Props:
  *   - searchTerm (string): The current search term to filter conversations and users.
@@ -16,7 +16,7 @@
  *   - loading: Boolean indicating whether conversations or users are being fetched.
  *
  * State:
- *   - displayItems (array): The filtered list of conversations and users to display.
+ *   - displayItems (array): The filtered and sorted list of conversations and users to display.
  *   - noResultsMessage (string): The message to display when no matches are found.
  *   - isSearching (boolean): Indicates whether the user is actively searching.
  *
@@ -52,13 +52,14 @@
  *       <SidebarConversations searchTerm={searchTerm} />
  */
 
-import { memo, useEffect } from "react";
+import { memo, useEffect, useMemo } from "react";
 import SidebarConversation from "./conversation/SidebarConversation";
 import SidebarUser from "./user/SidebarUser";
 import { useConversationStore } from "../../hooks/conversation/useConversationStore";
 import { useUserStore } from "../../hooks/conversation/useUserStore";
 import { useAuthContext } from "../../store/AuthContext";
 import { useConversationFilter } from "../../hooks/conversation/useConversationFilter";
+import { useConversationsHydration } from "../../hooks/conversation/useConversationsHydration";
 
 const SidebarConversations = memo(({ searchTerm = "" }) => {
     const {
@@ -80,27 +81,30 @@ const SidebarConversations = memo(({ searchTerm = "" }) => {
         setConversations([]);
     }, [authUser?.id, setSelectedConversation, setMessages, setConversations]);
 
+    // Hydrate if any conversation has incomplete participant data (moved to hook)
+    useConversationsHydration(conversations, refreshConversations);
+
     // Hydrate if any conversation has incomplete participant data (IDs only or missing names)
-    useEffect(() => {
-        if (!Array.isArray(conversations) || conversations.length === 0) return;
+    // useEffect(() => {
+    //     if (!Array.isArray(conversations) || conversations.length === 0) return;
 
-        const needsHydration = conversations.some(
-            (c) =>
-                !Array.isArray(c.participants) ||
-                c.participants.length === 0 ||
-                c.participants.some(
-                    (p) =>
-                        !p ||
-                        typeof p === "string" ||
-                        !p._id ||
-                        (!p.fullName && !p.username)
-                )
-        );
+    //     const needsHydration = conversations.some(
+    //         (c) =>
+    //             !Array.isArray(c.participants) ||
+    //             c.participants.length === 0 ||
+    //             c.participants.some(
+    //                 (p) =>
+    //                     !p ||
+    //                     typeof p === "string" ||
+    //                     !p._id ||
+    //                     (!p.fullName && !p.username)
+    //             )
+    //     );
 
-        if (needsHydration) {
-            refreshConversations();
-        }
-    }, [conversations, refreshConversations]);
+    //     if (needsHydration) {
+    //         refreshConversations();
+    //     }
+    // }, [conversations, refreshConversations]);
 
     const loading = conversationsLoading || usersLoading;
 
@@ -115,6 +119,25 @@ const SidebarConversations = memo(({ searchTerm = "" }) => {
             selectedConversation
         );
 
+    // Sort conversations by lastMessage.createdAt (desc), keep users as-is
+    // const sortedDisplayItems = useMemo(() => {
+    //     const convs = displayItems
+    //         .filter((i) => i.type === "conversation")
+    //         .sort((a, b) => {
+    //             const ta = new Date(
+    //                 a.data.lastMessage?.createdAt || 0
+    //             ).getTime();
+    //             const tb = new Date(
+    //                 b.data.lastMessage?.createdAt || 0
+    //             ).getTime();
+    //             return tb - ta; // newest first
+    //         });
+    //     const usersPart = displayItems.filter((i) => i.type === "user");
+    //     return [...convs, ...usersPart];
+    // }, [displayItems]);
+
+    const sortedDisplayItems = useMemo(() => displayItems, [displayItems]);
+
     // Render loading state
     if (loading) {
         return (
@@ -126,7 +149,7 @@ const SidebarConversations = memo(({ searchTerm = "" }) => {
 
     return (
         <div className="overflow-auto flex-1">
-            {displayItems.length > 0 ? (
+            {sortedDisplayItems.length > 0 ? (
                 <div className="flex flex-col gap-1 p-2">
                     {isSearching && (
                         <div className="text-xs text-white/60 px-2 pb-2">
@@ -134,7 +157,7 @@ const SidebarConversations = memo(({ searchTerm = "" }) => {
                         </div>
                     )}
 
-                    {displayItems.map((item) =>
+                    {sortedDisplayItems.map((item) =>
                         item.type === "conversation" ? (
                             <SidebarConversation
                                 key={`conv-${item.data._id}`}

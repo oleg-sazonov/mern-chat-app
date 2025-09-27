@@ -12,3 +12,5 @@
     If I'll reload page I'll get correct behavior and correct SidebarConversation as well as MessageContainer data. 
 
     // maybe fixed
+
+2) After new user Signed up (authorized) -> user can see Home.jsx. But as this user hasn't yet conversations we see toast with the message: "Could not load messages". But not every time.

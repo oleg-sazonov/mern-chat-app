@@ -3,14 +3,12 @@
  * --------------------------
  * Custom hook for filtering conversations and users based on a search term.
  *
- * This hook provides sophisticated filtering logic to find matching conversations and users,
- * handling the complexity of:
- * - Determining which users already have conversations with the current user
- * - Identifying selected conversations or temporary conversations
- * - Properly formatting results for consistent rendering
+ * Purpose:
+ *   - Provides a unified API for searching across both conversations and users.
+ *   - Handles filtering, sorting, and selection logic for conversations and users.
  *
  * Exports:
- *   - useConversationFilter: Provides filtered conversations and users based on a search term.
+ *   - useConversationFilter: Filters and sorts conversations and users based on the search term.
  *
  * Parameters:
  *   - searchTerm (string): The search term to filter by.
@@ -18,33 +16,33 @@
  *   - users (array): Array of user objects to filter.
  *   - currentUserId (string): ID of the current user to exclude from results.
  *   - isLoading (boolean): Indicates if data is being loaded.
- *   - selectedConversation (object|null): The currently selected conversation.
+ *   - selectedConversation (object | null): The currently selected conversation.
  *
- * State Management:
- *   - Uses useMemo to efficiently compute filtered results only when dependencies change.
- *   - Tracks which conversation or user is currently selected to apply proper styling.
- *   - Handles special case of temporary conversations (with IDs starting with "temp_").
- *
- * Return Object:
+ * Returns:
  *   - displayItems (array): Combined array of filtered conversation and user objects with:
- *       - type: "conversation" or "user" to determine rendering component
- *       - data: The original conversation or user object
- *       - isSelected: Boolean flag indicating if this item is currently selected
- *   - noResultsMessage (string): Appropriate message to display when no results are found.
+ *       - type: "conversation" or "user" to determine rendering component.
+ *       - data: The original conversation or user object.
+ *       - isSelected: Boolean flag indicating if this item is currently selected.
+ *   - noResultsMessage (string): Message to display when no results are found.
  *   - isSearching (boolean): Indicates whether a search is currently active.
  *   - loading (boolean): Passes through the loading state from parameters.
  *
- * Helper Functions:
- *   - filterConversations: Filters conversations based on participant names and usernames.
- *   - filterUsers: Filters users, excluding the current user and those already in conversations.
+ * Behavior:
+ *   - Filters conversations by matching participant names or usernames with the search term.
+ *   - Filters users by excluding the current user and users already in conversations.
+ *   - Sorts conversations by `lastMessage.createdAt` in descending order (newest first).
+ *   - Handles temporary conversations (IDs starting with "temp_") and marks them as selected if applicable.
  *
- * Selection Logic:
- *   - Regular conversations: Matched by comparing _id with selectedConversation._id
- *   - Temporary conversations: Identified by ID prefix "temp_" and matched against user ID
+ * Helper Functions:
+ *   - filterConversations:
+ *       - Filters conversations based on participant names and usernames.
+ *       - Excludes the current user from the participant list.
+ *   - filterUsers:
+ *       - Filters users by excluding the current user and users already in conversations.
+ *       - Matches users by full name or username.
  *
  * Usage:
- *   - This hook is used in the SidebarConversations component to power the search functionality.
- *   - It provides a unified API for searching across both conversations and users.
+ *   - Used in components like `SidebarConversations` to power the search functionality.
  *
  * Example:
  *   const { displayItems, noResultsMessage, isSearching } = useConversationFilter(
@@ -67,6 +65,10 @@ export const useConversationFilter = (
     isLoading = false,
     selectedConversation = null
 ) => {
+    // Helper to sort by last message time (newest first)
+    const getLastMessageTime = (conv) =>
+        new Date(conv?.lastMessage?.createdAt || 0).getTime();
+
     // Combined result items, message, and search state
     const { displayItems, noResultsMessage, isSearching } = useMemo(() => {
         const trimmedSearch = searchTerm.trim().toLowerCase();
@@ -79,10 +81,13 @@ export const useConversationFilter = (
             selectedUserId = selectedConversation.participants[0]._id;
         }
 
-        // If not searching, just return conversations
+        // If not searching, return conversations sorted by lastMessage.createdAt
         if (!trimmedSearch) {
+            const sortedConversations = [...conversations].sort(
+                (a, b) => getLastMessageTime(b) - getLastMessageTime(a)
+            );
             return {
-                displayItems: conversations.map((conv) => ({
+                displayItems: sortedConversations.map((conv) => ({
                     type: "conversation",
                     data: conv,
                     isSelected: conv._id === selectedId,
@@ -117,9 +122,14 @@ export const useConversationFilter = (
             usersInConversations
         );
 
+        // Sort matched conversations by lastMessage.createdAt
+        const matchingConversationsSorted = [...matchingConversations].sort(
+            (a, b) => getLastMessageTime(b) - getLastMessageTime(a)
+        );
+
         // Combine and sort results - adding isSelected property to each item
         const items = [
-            ...matchingConversations.map((conv) => ({
+            ...matchingConversationsSorted.map((conv) => ({
                 type: "conversation",
                 data: conv,
                 isSelected: conv._id === selectedId,
