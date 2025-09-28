@@ -10,28 +10,30 @@
  *   - location: The current location object from React Router, used for handling route transitions.
  *
  * Layout:
- *   - Wraps the application with the AuthProvider to provide global authentication state.
- *   - Wraps the application with the SocketContextProvider to provide real-time communication state.
- *   - Uses AnimatePresence from Framer Motion to enable smooth page transitions.
- *   - Renders the Home component as the default page.
- *   - Includes Login and SignUp components for authentication routes.
- *   - Displays toast notifications using the Toaster component from react-hot-toast.
+ *   - Wraps the application with the `AuthProvider` to provide global authentication state.
+ *   - Wraps the application with the `SocketContextProvider` to provide real-time communication state.
+ *   - Uses `AnimatePresence` from Framer Motion to enable smooth page transitions.
+ *   - Renders the `Home` component as the default page.
+ *   - Includes `Login` and `SignUp` components for authentication routes.
+ *   - Includes `NotFound` component for handling undefined routes.
+ *   - Displays toast notifications using the `Toaster` component from `react-hot-toast`.
  *
  * Components:
- *   - AuthProvider: Provides authentication-related state and functions to the app.
- *   - SocketContextProvider: Provides real-time communication state and functions to the app.
- *   - AnimatePresence: Enables animations for route transitions.
- *   - Routes: Defines the application's routing structure.
- *   - Home: The main chat interface.
- *   - Login: The login page for user authentication.
- *   - SignUp: The signup page for new user registration.
- *   - Toaster: Displays toast notifications with a dark theme.
- *   - ProtectedRoute: Protects routes that require authentication, redirecting to the login page if the user is not authenticated.
- *   - PublicRoute: Protects routes that should only be accessible to unauthenticated users, redirecting to the home page if the user is authenticated.
+ *   - `AuthProvider`: Provides authentication-related state and functions to the app.
+ *   - `SocketContextProvider`: Provides real-time communication state and functions to the app.
+ *   - `AnimatePresence`: Enables animations for route transitions.
+ *   - `Routes`: Defines the application's routing structure.
+ *   - `Home`: The main chat interface.
+ *   - `Login`: The login page for user authentication.
+ *   - `SignUp`: The signup page for new user registration.
+ *   - `NotFound`: Displays a 404 error page for undefined routes.
+ *   - `Toaster`: Displays toast notifications with a dark theme.
+ *   - `ProtectedRoute`: Protects routes that require authentication, redirecting to the login page if the user is not authenticated.
+ *   - `PublicRoute`: Protects routes that should only be accessible to unauthenticated users, redirecting to the home page if the user is authenticated.
  *
  * Usage:
  *   - This component is rendered in `frontend/src/main.jsx` and serves as the root of the React app.
- *   - Provides global state for authentication and real-time communication using the AuthProvider and SocketContextProvider.
+ *   - Provides global state for authentication and real-time communication using the `AuthProvider` and `SocketContextProvider`.
  *
  * Example:
  *   - Rendered in `main.jsx`:
@@ -58,6 +60,15 @@
  * Behavior:
  *   - If the user is not authenticated (`authUser` does not exist), renders the children.
  *   - If the user is authenticated, redirects to the `/` (home) page.
+ *
+ * NotFound Component
+ * -------------------
+ * Handles undefined routes and displays a 404 error page.
+ *
+ * Behavior:
+ *   - If the user is authenticated, provides options to "Go Back" or "Open Chat".
+ *   - If the user is not authenticated, provides options to "Login" or "Sign Up".
+ *   - Styled with smooth animations and consistent UI.
  */
 
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
@@ -68,6 +79,7 @@ import { SocketContextProvider } from "./store/SocketContext";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import SignUp from "./pages/signup/SignUp";
+import NotFound from "./pages/notFound/NotFound";
 
 import { Toaster } from "react-hot-toast";
 import { TOAST_STYLE } from "./utils/toastConfig";
@@ -116,6 +128,7 @@ function AppContent() {
                             </PublicRoute>
                         }
                     />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
                 <Toaster position="top-center" toastOptions={TOAST_STYLE} />
             </AnimatePresence>

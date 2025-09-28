@@ -1,16 +1,3 @@
-1) When new user writes message to current user I've got incorrect SidebarConversation behavior. Component shows wrong info.
-    a - wrong avatar;
-    b - fullName doesn't exist;
-    c - time correct;
-    d - lastMessageCorrect;
-    e - online/offline status doesn't exist.
-    MessageContainer with this SidebarConversation also has incorrect data (messages). 
-    ChatHeader conversation.name doesn't exist.
-    ChatHeader avatarUrl isn't correct.
-    ChatHeader isReceiverOnline isn't correct.
-    Also, if I select this SidebarConversation and get a newMessage from this conversation, I've got it in MessageContainer but if I choose another conversation and then back to previous one I'll got the same wrong data in MessageContainer without lastMessage.
-    If I'll reload page I'll get correct behavior and correct SidebarConversation as well as MessageContainer data. 
+1) After new user Signed up (authorized) -> user can see Home.jsx. But as this user hasn't yet conversations we see toast with the message: "Could not load messages". But not every time.
 
-    // maybe fixed
-
-2) After new user Signed up (authorized) -> user can see Home.jsx. But as this user hasn't yet conversations we see toast with the message: "Could not load messages". But not every time.
+2) Add sound of newMessage
