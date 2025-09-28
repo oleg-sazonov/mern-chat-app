@@ -84,28 +84,6 @@ const SidebarConversations = memo(({ searchTerm = "" }) => {
     // Hydrate if any conversation has incomplete participant data (moved to hook)
     useConversationsHydration(conversations, refreshConversations);
 
-    // Hydrate if any conversation has incomplete participant data (IDs only or missing names)
-    // useEffect(() => {
-    //     if (!Array.isArray(conversations) || conversations.length === 0) return;
-
-    //     const needsHydration = conversations.some(
-    //         (c) =>
-    //             !Array.isArray(c.participants) ||
-    //             c.participants.length === 0 ||
-    //             c.participants.some(
-    //                 (p) =>
-    //                     !p ||
-    //                     typeof p === "string" ||
-    //                     !p._id ||
-    //                     (!p.fullName && !p.username)
-    //             )
-    //     );
-
-    //     if (needsHydration) {
-    //         refreshConversations();
-    //     }
-    // }, [conversations, refreshConversations]);
-
     const loading = conversationsLoading || usersLoading;
 
     // Use the custom hook for filtering
@@ -118,23 +96,6 @@ const SidebarConversations = memo(({ searchTerm = "" }) => {
             loading,
             selectedConversation
         );
-
-    // Sort conversations by lastMessage.createdAt (desc), keep users as-is
-    // const sortedDisplayItems = useMemo(() => {
-    //     const convs = displayItems
-    //         .filter((i) => i.type === "conversation")
-    //         .sort((a, b) => {
-    //             const ta = new Date(
-    //                 a.data.lastMessage?.createdAt || 0
-    //             ).getTime();
-    //             const tb = new Date(
-    //                 b.data.lastMessage?.createdAt || 0
-    //             ).getTime();
-    //             return tb - ta; // newest first
-    //         });
-    //     const usersPart = displayItems.filter((i) => i.type === "user");
-    //     return [...convs, ...usersPart];
-    // }, [displayItems]);
 
     const sortedDisplayItems = useMemo(() => displayItems, [displayItems]);
 

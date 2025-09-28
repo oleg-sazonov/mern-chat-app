@@ -3,6 +3,11 @@
  * --------------------------
  * Custom hook for fetching and normalizing conversations with their last messages.
  *
+ * Purpose:
+ *   - Fetches conversations from the server.
+ *   - Normalizes the `lastMessage` field for consistent structure.
+ *   - Handles authentication errors and updates the conversation state.
+ *
  * Exports:
  *   - useConversationsFetch: Provides a function to fetch conversations and ensures they are normalized.
  *
@@ -18,8 +23,10 @@
  * Functions:
  *   - fetchConversations():
  *       - Fetches conversations from the `/api/conversations` endpoint.
+ *       - Adds a cache buster (`t=${Date.now()}`) to avoid stale data.
  *       - Normalizes the `lastMessage` field to ensure consistent structure.
- *       - Handles authentication errors and updates the `conversations` state.
+ *       - Handles authentication errors (401/403) by clearing the user state and showing a toast notification.
+ *       - Updates the `conversations` state with the fetched data.
  *
  * Normalization:
  *   - Ensures the `lastMessage` field in each conversation has a `content` property.
@@ -77,7 +84,13 @@ export const useConversationsFetch = () => {
 
     const fetchConversations = useCallback(async () => {
         try {
-            const res = await fetch("/api/conversations");
+            // const res = await fetch("/api/conversations");
+
+            // Add cache buster and disable cache to avoid stale data after browser reopen
+            const res = await fetch(`/api/conversations?t=${Date.now()}`, {
+                cache: "no-store",
+                headers: { "Cache-Control": "no-cache" },
+            });
 
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem("user");

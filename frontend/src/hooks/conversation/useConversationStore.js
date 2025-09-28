@@ -3,6 +3,10 @@
  * --------------------------
  * Custom hook for managing conversation-related state using Zustand.
  *
+ * Purpose:
+ *   - Provides centralized state management for conversations, messages, and responsive layout.
+ *   - Handles conversation selection, message updates, and real-time synchronization.
+ *
  * Exports:
  *   - useConversationStore: Provides access to conversation state and actions.
  *
@@ -66,6 +70,15 @@
  * Usage:
  *   - This hook is used in components like `Sidebar` and `MessageContainer` to manage conversation state.
  *   - Provides a centralized way to handle conversation selection, messages, and responsive layout.
+ *
+ * Example:
+ *   - Import and use this hook in a component:
+ *       const {
+ *           selectedConversation,
+ *           conversations,
+ *           handleSelectConversation,
+ *           refreshConversations,
+ *       } = useConversationStore();
  */
 
 import useConversation from "../../store/zustand/useConversation";
@@ -91,6 +104,12 @@ export const useConversationStore = () => {
 
     // Side-effects (listeners + initial fetch + responsive)
     const { fetchConversations } = useConversationsFetch();
+
+    // Stable wrapper to avoid re-creating a new function each render
+    const refreshConversationsCb = useCallback(() => {
+        fetchConversations(false);
+    }, [fetchConversations]);
+
     useResponsiveBreakpoint();
     useConversationSocketListeners();
 
@@ -216,7 +235,7 @@ export const useConversationStore = () => {
         isMobile,
         handleSelectUser,
         markConversationRead,
-        refreshConversations: () => fetchConversations(false),
+        refreshConversations: refreshConversationsCb,
     };
 };
 

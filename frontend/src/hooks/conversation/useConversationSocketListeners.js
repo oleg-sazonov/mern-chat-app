@@ -3,28 +3,35 @@
  * -----------------------------------
  * Custom hook for managing real-time Socket.IO events related to conversations and messages.
  *
+ * Purpose:
+ *   - Listens for real-time updates to conversations and messages via Socket.IO.
+ *   - Updates the local state for conversations and messages in response to server events.
+ *   - Plays a notification sound for incoming messages in unselected conversations.
+ *
  * Exports:
- *   - useConversationSocketListeners: Sets up listeners for real-time updates to conversations and messages.
+ *   - useConversationSocketListeners: Initializes and manages Socket.IO event listeners.
  *
  * Dependencies:
  *   - `useConversation`: Zustand store hook for managing conversation-related state.
  *   - `useAuthContext`: Context hook for accessing the authenticated user's data.
  *   - `useSocketContext`: Context hook for accessing the Socket.IO instance.
+ *   - `useNotificationSound`: Hook for playing notification sounds.
  *
  * State:
- *   - selectedConversation (object | null): The currently selected conversation.
- *   - messages (array): The list of messages for the selected conversation.
- *   - conversations (array): The list of all conversations.
+ *   - `selectedConversation`: The currently selected conversation.
+ *   - `messages`: The list of messages for the selected conversation.
+ *   - `conversations`: The list of all conversations.
  *
  * Actions:
- *   - setMessages(messages): Updates the `messages` state with the provided array.
- *   - setConversations(conversations): Updates the `conversations` state with the provided array.
+ *   - `setMessages(messages)`: Updates the `messages` state with the provided array.
+ *   - `setConversations(conversations)`: Updates the `conversations` state with the provided array.
  *
  * Real-Time Events:
  *   - `message:new`:
  *       - Triggered when a new message is sent in a conversation.
  *       - Appends the new message to the `messages` state if the conversation is currently selected.
  *       - Increments the `unreadCount` for other conversations.
+ *       - Plays a notification sound for incoming messages in unselected conversations.
  *   - `conversation:updated`:
  *       - Triggered when a conversation's last message is updated.
  *       - Updates the `lastMessage` field for the corresponding conversation in the `conversations` state.
@@ -37,6 +44,7 @@
  *   - Uses refs (`messagesRef`, `selectedConversationRef`, `conversationsRef`) to avoid stale closures in event handlers.
  *   - Ensures that state updates are consistent and do not overwrite the latest data.
  *   - Debounces server-side `mark-as-read` requests to prevent excessive API calls.
+ *   - Optimistically updates the `unreadCount` for conversations to improve UI responsiveness.
  *
  * Cleanup:
  *   - Removes all Socket.IO event listeners when the component using the hook unmounts or when the `socket` instance changes.
@@ -55,6 +63,7 @@ import { useEffect, useRef } from "react";
 import useConversation from "../../store/zustand/useConversation";
 import { useAuthContext } from "../../store/AuthContext";
 import { useSocketContext } from "../../store/SocketContext";
+import { useNotificationSound } from "../ui/useNotificationSound";
 
 export const useConversationSocketListeners = () => {
     const {
@@ -67,6 +76,7 @@ export const useConversationSocketListeners = () => {
 
     const { authUser } = useAuthContext();
     const { socket } = useSocketContext();
+    const { playNotification } = useNotificationSound();
 
     // Refs to avoid stale closures
     const messagesRef = useRef(messages);
@@ -118,6 +128,10 @@ export const useConversationSocketListeners = () => {
 
         const handleNewMessage = ({ conversationId, message }) => {
             const currentConv = selectedConversationRef.current;
+
+            // Determine if this is an incoming message from another user
+            const isIncoming = message.senderId?.toString() !== authUser?.id;
+
             if (currentConv?._id === conversationId) {
                 const newMsg = {
                     id: message.id,
@@ -129,9 +143,7 @@ export const useConversationSocketListeners = () => {
                 setMessages([...messagesRef.current, newMsg]);
 
                 // If it's an incoming message while this conversation is open,
-                // mark it as read on the server so unreadCount doesn't accumulate.
-                const isIncoming =
-                    message.senderId?.toString() !== authUser?.id;
+                // ensure server unreadCount stays 0 (debounced).
                 if (
                     isIncoming &&
                     currentConv._id &&
@@ -140,6 +152,11 @@ export const useConversationSocketListeners = () => {
                     scheduleMarkAsRead(conversationId);
                 }
             } else {
+                // Conversation not selected -> will show as unread -> play sound
+                if (isIncoming) {
+                    playNotification(); // <-- play sound for unread
+                }
+
                 // Fallback increment to avoid missed badges if server patch is delayed
                 setConversations(
                     conversationsRef.current.map((c) =>

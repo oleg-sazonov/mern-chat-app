@@ -1,3 +1,7 @@
 1) After new user Signed up (authorized) -> user can see Home.jsx. But as this user hasn't yet conversations we see toast with the message: "Could not load messages". But not every time.
 
-2) Add sound of newMessage
+2) Add sound of newMessage. audio unlocked (once) works with delay.
+
+3) Problem with divider "New messages". If current user gets (for instance: 3 messages) and go to conversation with these messages current user sees divider above these 3 messages. But if user (sender) sends another one message, current user still sees divider above 3 messages but with new one message.
+
+4) When I open browser, as an authorised user I see SidebarConversations as they were, when I leave the browser last time. And I need to reload page to see last updates as unreadedMessages etc.

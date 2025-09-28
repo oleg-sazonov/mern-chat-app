@@ -20,6 +20,9 @@
  *   - Desktop View: Renders Sidebar and MessageContainer side-by-side with responsive widths.
  *   - Mobile View: Renders either Sidebar or MessageContainer based on the selected conversation.
  *
+ * Effects:
+ *   - Clears stale conversation state and refetches conversations on page load.
+ *
  * Usage:
  *   - This component is rendered in `App.jsx` as part of the `/` route.
  *   - Manages responsive layout and conversation state using the Zustand store (`useConversationStore`).
@@ -28,7 +31,7 @@
  *   - Rendered in `App.jsx`:
  *       <Route path="/" element={<Home />} />
  */
-
+import { useEffect } from "react";
 import Sidebar from "../../components/sidebar/Sidebar";
 import MessageContainer from "../../components/messageContainer/MessageContainer";
 import {
@@ -40,7 +43,26 @@ import {
 import { useConversationStore } from "../../hooks/conversation/useConversationStore";
 
 const Home = () => {
-    const { isMobile } = useConversationStore();
+    const {
+        isMobile,
+        refreshConversations,
+        setConversations,
+        setMessages,
+        setSelectedConversation,
+    } = useConversationStore();
+
+    // Fresh start on page open: clear stale state and refetch
+    useEffect(() => {
+        setSelectedConversation(null);
+        setMessages([]);
+        setConversations([]);
+        refreshConversations();
+    }, [
+        refreshConversations,
+        setConversations,
+        setMessages,
+        setSelectedConversation,
+    ]);
 
     return (
         <div className={getOuterContainerClass()}>

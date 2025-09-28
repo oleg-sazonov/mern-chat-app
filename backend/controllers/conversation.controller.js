@@ -81,6 +81,7 @@
  *           }
  *       ]
  */
+
 import Conversation from "../models/conversation.model.js";
 import { io, getReceiverSocketIds } from "../socket/socket.js";
 
@@ -122,6 +123,8 @@ export const getConversationsWithLastMessage = async (req, res) => {
             };
         });
 
+        // Prevent intermediaries/browsers from caching this response
+        res.set("Cache-Control", "no-store");
         res.status(200).json(formattedConversations);
     } catch (error) {
         console.error(
