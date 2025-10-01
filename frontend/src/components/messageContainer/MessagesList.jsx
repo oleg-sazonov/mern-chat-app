@@ -137,28 +137,34 @@ const MessagesList = memo(
 
         const messageList = (
             <div className="flex-1 overflow-auto p-4 space-y-4">
-                {messagesArray.map((message, idx) => (
-                    <div key={message.id}>
-                        {firstUnreadIndex === idx && unreadCount > 0 && (
+                {messagesArray.map(
+                    (
+                        message // add idx if divider is needed
+                    ) => (
+                        <div key={message.id}>
+                            {/* {firstUnreadIndex === idx && unreadCount > 0 && (
                             <div
                                 ref={newMarkerRef}
                                 className="divider text-white/60 text-xs"
                             >
                                 New messages
                             </div>
-                        )}
-                        <Message
-                            message={message.content}
-                            timestamp={message.timestamp}
-                            isSentByCurrentUser={message.isSentByCurrentUser}
-                            avatarUrl={
-                                message.isSentByCurrentUser
-                                    ? senderAvatarUrl
-                                    : receiverAvatarUrl
-                            }
-                        />
-                    </div>
-                ))}
+                        )} */}
+                            <Message
+                                message={message.content}
+                                timestamp={message.timestamp}
+                                isSentByCurrentUser={
+                                    message.isSentByCurrentUser
+                                }
+                                avatarUrl={
+                                    message.isSentByCurrentUser
+                                        ? senderAvatarUrl
+                                        : receiverAvatarUrl
+                                }
+                            />
+                        </div>
+                    )
+                )}
                 <div ref={messagesEndRef} />
             </div>
         );

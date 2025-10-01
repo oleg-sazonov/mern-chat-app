@@ -239,7 +239,9 @@ export const useConversationSocketListeners = () => {
 
             // Clear any pending timers
             markReadTimersRef.current.forEach((t) => clearTimeout(t));
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             markReadTimersRef.current.clear();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket, authUser, setMessages, setConversations]);
 };
