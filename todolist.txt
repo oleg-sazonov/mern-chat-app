@@ -1,3 +1,1 @@
-1) After new user Signed up (authorized) -> user can see Home.jsx. But as this user hasn't yet conversations we see toast with the message: "Could not load messages". But not every time.
-
-2) Browsers have significant restrictions on audio playback before user interaction. Attempt to unlock with muted audio.
+1) Browsers have significant restrictions on audio playback before user interaction. Attempt to unlock with muted audio. Now just after user "do something" on page audio notifications will enable.

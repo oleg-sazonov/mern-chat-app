@@ -19,10 +19,10 @@
  * How it works:
  *   1. Finds an existing conversation between the sender and receiver using:
  *        { participants: { $all: [senderId, receiverId] } }.
- *      - $all is a MongoDB operator that matches arrays containing all specified elements.
+ *      - `$all` is a MongoDB operator that matches arrays containing all specified elements.
  *   2. If no conversation exists, creates a new one with both participants.
  *   3. Creates a new message document in the database.
- *   4. Adds the new message's ID to the conversation's messages array and saves the conversation.
+ *   4. Adds the new message's ID to the conversation's `messages` array and saves the conversation.
  *   5. Updates the `reads` array:
  *        - Ensures both sender and receiver have read entries.
  *        - Increments the receiver's `unreadCount`.
@@ -64,14 +64,13 @@
  * How it works:
  *   1. Finds the conversation between the sender and receiver using:
  *        { participants: { $all: [senderId, receiverId] } }.
- *   2. Uses `.populate("messages")` to replace message IDs in the conversation's messages array
- *      with the actual message documents from the Message collection.
+ *   2. Uses `.populate("messages")` to replace message IDs in the conversation's `messages` array
+ *      with the actual message documents from the `Message` collection.
  *   3. If the conversation exists, returns all messages in the conversation.
- *   4. If not found, responds with a 404 error.
+ *   4. If not found, responds with an empty array and a 200 status.
  *
  * Responses:
  *   - 200: Messages retrieved successfully, returns the messages array.
- *   - 404: Conversation not found.
  *   - 500: Internal server error.
  *
  * Dependencies:
@@ -80,7 +79,7 @@
  *   - Socket.IO instance (`io`) for real-time communication.
  *
  * Notes:
- *   - { participants: { $all: [senderId, receiverId] } } is a Mongoose/MongoDB query that finds conversations containing both users.
+ *   - `{ participants: { $all: [senderId, receiverId] } }` is a Mongoose/MongoDB query that finds conversations containing both users.
  *   - `.populate("messages")` is a Mongoose method that fetches and replaces message IDs with the corresponding message documents,
  *     making it easy to access all message details in a single query.
  */
@@ -215,7 +214,12 @@ export const getMessages = async (req, res) => {
         }).populate("messages"); // NOT REFERENCE BUT ACTUAL MESSAGES
 
         if (!conversation) {
-            return res.status(404).json({ message: "Conversation not found" });
+            // return res.status(404).json({ message: "Conversation not found" });
+            // Return empty instead of 404 to avoid noisy front-end toasts for new users
+            return res.status(200).json({
+                message: "No messages yet",
+                data: [],
+            });
         }
 
         // If conversation exists, retrieve messages

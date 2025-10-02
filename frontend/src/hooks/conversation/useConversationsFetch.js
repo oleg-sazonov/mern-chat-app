@@ -21,16 +21,15 @@
  *       - Updates the authenticated user state in the AuthContext.
  *
  * Functions:
+ *   - normalizeConversations(list):
+ *       - Ensures the `lastMessage` field in each conversation has a `content` property.
+ *       - Handles cases where `lastMessage` is missing or has inconsistent structure.
  *   - fetchConversations():
  *       - Fetches conversations from the `/api/conversations` endpoint.
  *       - Adds a cache buster (`t=${Date.now()}`) to avoid stale data.
- *       - Normalizes the `lastMessage` field to ensure consistent structure.
+ *       - Retries once if the first fetch attempt fails.
  *       - Handles authentication errors (401/403) by clearing the user state and showing a toast notification.
  *       - Updates the `conversations` state with the fetched data.
- *
- * Normalization:
- *   - Ensures the `lastMessage` field in each conversation has a `content` property.
- *   - Handles cases where `lastMessage` is missing or has inconsistent structure.
  *
  * Effects:
  *   - Automatically fetches conversations on mount if the `conversations` array is empty.
@@ -38,6 +37,7 @@
  * Error Handling:
  *   - Displays error notifications using `showToast` for failed requests or authentication issues.
  *   - Logs errors to the console for debugging.
+ *   - Prevents duplicate error toasts in React Strict Mode using a `didToastRef`.
  *
  * Returns:
  *   - fetchConversations (function): Function to manually fetch conversations.
@@ -53,7 +53,7 @@
  *       }, []);
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { showToast } from "../../utils/toastConfig";
 import { useAuthContext } from "../../store/AuthContext";
 import useConversation from "../../store/zustand/useConversation";
@@ -82,20 +82,39 @@ export const useConversationsFetch = () => {
     const { conversations, setConversations } = useConversation();
     const { setAuthUser } = useAuthContext();
 
+    // De-dupe error toast in Strict Mode
+    const didToastRef = useRef(false);
+
     const fetchConversations = useCallback(async () => {
         try {
             // const res = await fetch("/api/conversations");
 
             // Add cache buster and disable cache to avoid stale data after browser reopen
-            const res = await fetch(`/api/conversations?t=${Date.now()}`, {
+            let res = await fetch(`/api/conversations?t=${Date.now()}`, {
                 cache: "no-store",
                 headers: { "Cache-Control": "no-cache" },
             });
 
+            // If first attempt fails (e.g., cookie race), retry once quickly
+            if (!res.ok) {
+                await new Promise((r) => setTimeout(r, 150));
+                res = await fetch(`/api/conversations?t=${Date.now()}`, {
+                    cache: "no-store",
+                    headers: { "Cache-Control": "no-cache" },
+                });
+            }
+
             if (res.status === 401 || res.status === 403) {
                 localStorage.removeItem("user");
                 setAuthUser(null);
-                showToast.error("Authentication expired. Please login again");
+                if (!didToastRef.current) {
+                    didToastRef.current = true;
+                    showToast.error(
+                        "Authentication expired. Please login again"
+                    );
+                    setTimeout(() => (didToastRef.current = false), 1500);
+                }
+                // showToast.error("Authentication expired. Please login again");
                 return;
             }
 
@@ -105,7 +124,12 @@ export const useConversationsFetch = () => {
             const normalized = normalizeConversations(data);
             setConversations(normalized);
         } catch (err) {
-            showToast.error(err.message || "Failed to load conversations");
+            // showToast.error(err.message || "Failed to load conversations");
+            if (!didToastRef.current) {
+                didToastRef.current = true;
+                showToast.error(err.message || "Failed to load conversations");
+                setTimeout(() => (didToastRef.current = false), 1500);
+            }
             console.error("fetchConversations error:", err);
         }
     }, [setConversations, setAuthUser]);

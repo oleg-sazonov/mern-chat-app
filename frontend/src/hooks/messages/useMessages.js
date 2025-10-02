@@ -30,6 +30,10 @@
  *   - Fetches messages whenever the selected conversation or receiver changes.
  *   - Clears messages for temporary conversations or when no conversation is selected.
  *
+ * Error Handling:
+ *   - Displays error notifications using `showToast` for failed requests.
+ *   - Prevents duplicate error toasts in React Strict Mode using a `didToastRef`.
+ *
  * Returns:
  *   - isLoading (boolean): Indicates whether messages are being fetched.
  *   - messages (array): The list of messages for the selected conversation.
@@ -67,7 +71,7 @@
  *       ]
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useConversationStore } from "../conversation/useConversationStore";
 import { showToast } from "../../utils/toastConfig";
 
@@ -75,6 +79,9 @@ export const useMessages = (receiverData) => {
     const [isLoading, setIsLoading] = useState(false);
     const { selectedConversation, messages, setMessages } =
         useConversationStore();
+
+    // Prevent duplicate error toasts in React Strict Mode (dev)
+    const didToastRef = useRef(false);
 
     // Load messages when conversation changes
     useEffect(() => {
@@ -103,6 +110,13 @@ export const useMessages = (receiverData) => {
                 // Fetch messages from API
                 const res = await fetch(`/api/messages/${receiverId}`);
 
+                // If no conversation exists yet, treat as empty list (no toast)
+                if (res.status === 404) {
+                    setMessages([]);
+                    setIsLoading(false);
+                    return;
+                }
+
                 if (!res.ok) {
                     throw new Error("Failed to fetch messages");
                 }
@@ -125,7 +139,16 @@ export const useMessages = (receiverData) => {
                 );
             } catch (error) {
                 console.error("Error fetching messages:", error);
-                showToast.error("Could not load messages");
+                // showToast.error("Could not load messages");
+                // setMessages([]);
+
+                // De-dupe toast in Strict Mode
+                if (!didToastRef.current) {
+                    didToastRef.current = true;
+                    showToast.error("Could not load messages");
+                    // Reset the flag after a short delay to allow future distinct errors
+                    setTimeout(() => (didToastRef.current = false), 1500);
+                }
                 setMessages([]);
             } finally {
                 setIsLoading(false);
