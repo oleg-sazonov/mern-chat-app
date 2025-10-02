@@ -7,7 +7,7 @@
  *   - MessagesList: Renders a scrollable list of messages with loading, error, and empty states.
  *
  * Props:
- *   - conversation (object): The selected conversation object containing details like `id` and `lastMessage`.
+ *   - conversation (object): The selected conversation object containing details like `id`, `unreadCount`, and `lastMessage`.
  *   - isLoading (boolean): Indicates if messages are being loaded (optional, defaults to `false`).
  *   - messages (array): The list of messages for the selected conversation (optional, defaults to an empty array).
  *   - error (object | null): Error object if messages failed to load (optional, defaults to `null`).
@@ -27,6 +27,7 @@
  *
  * Effects:
  *   - Automatically scrolls to the bottom of the message list when new messages are added or the conversation changes.
+ *   - Scrolls to the "New messages" divider if there are unread messages.
  *
  * Layout:
  *   - Wrapper: A scrollable container for the messages.
@@ -47,6 +48,20 @@
  *           receiverAvatarUrl={receiverAvatarUrl}
  *           senderAvatarUrl={senderAvatarUrl}
  *       />
+ *
+ * Scroll Behavior:
+ *   - If there are unread messages:
+ *       - Automatically scrolls to the "New messages" divider (no smooth scrolling).
+ *   - If there are no unread messages:
+ *       - Scrolls to the bottom of the message list.
+ *       - Smooth scrolling is applied only for outgoing messages.
+ *
+ * Priority Rendering:
+ *   - Loading > Error > Empty > Messages:
+ *       - Displays the loading spinner if `isLoading` is true.
+ *       - Displays the error message if `error` is not null.
+ *       - Displays the empty state if `messages` is an empty array.
+ *       - Displays the list of messages otherwise.
  */
 
 import { memo, useEffect, useRef, useMemo } from "react";
@@ -161,6 +176,7 @@ const MessagesList = memo(
                                         ? senderAvatarUrl
                                         : receiverAvatarUrl
                                 }
+                                isFresh={message.isFresh}
                             />
                         </div>
                     )

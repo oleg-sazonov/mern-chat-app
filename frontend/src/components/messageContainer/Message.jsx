@@ -1,16 +1,14 @@
 /**
  * Message Component
- * ----------------
- * Renders a single message bubble in the chat interface.
- *
- * Exports:
- *   - Message: Displays a single chat message with avatar, content, and timestamp.
+ * -----------------
+ * Renders a single chat message with an avatar, message bubble, and timestamp.
  *
  * Props:
  *   - message (string): The text content of the message.
- *   - isSentByCurrentUser (boolean): Indicates if the current user sent this message.
- *   - avatarUrl (string): URL for the sender's avatar image.
+ *   - isSentByCurrentUser (boolean): Indicates whether the message was sent by the current user.
+ *   - avatarUrl (string): The URL of the sender's avatar image.
  *   - timestamp (string): The time the message was sent (ISO string).
+ *   - isFresh (boolean): Indicates if the message is new and should be highlighted with an animation. Defaults to `false`.
  *
  * Layout:
  *   - Chat Bubble:
@@ -20,6 +18,7 @@
  *       - Uses the current user's avatar for sent messages or the provided `avatarUrl` for received messages.
  *   - Message Content:
  *       - Displays the actual message text inside a styled bubble.
+ *       - Applies a brief animation (`animate-shake`) if `isFresh` is `true`.
  *   - Timestamp:
  *       - Shows the time the message was sent below the bubble.
  *
@@ -36,7 +35,7 @@
  *
  * Usage:
  *   - Used within the `MessagesList` component to render each individual message.
- *   - Responsive and styled for glassmorphism chat UI.
+ *   - Responsive and styled for a modern chat UI.
  *
  * Example:
  *   - Rendered in `MessagesList.jsx`:
@@ -45,7 +44,11 @@
  *           isSentByCurrentUser={true}
  *           avatarUrl="https://robohash.org/me.png"
  *           timestamp="2023-10-01T12:30:00.000Z"
+ *           isFresh={true}
  *       />
+ *
+ * Performance:
+ *   - Memoized using `React.memo` to prevent unnecessary re-renders.
  */
 
 import { memo } from "react";
@@ -55,7 +58,13 @@ import { useCurrentUser } from "../../hooks/auth/useCurrentUser";
 import { useAuthContext } from "../../store/AuthContext";
 
 const Message = memo(
-    ({ message, isSentByCurrentUser, avatarUrl, timestamp }) => {
+    ({
+        message,
+        isSentByCurrentUser,
+        avatarUrl,
+        timestamp,
+        isFresh = false,
+    }) => {
         // Position message on the right (sent) or left (received)
         const position = isSentByCurrentUser ? "chat-end" : "chat-start";
 
@@ -98,9 +107,16 @@ const Message = memo(
                 </div>
 
                 {/* Message content bubble */}
+                {/* <MessageBubble
+                    content={message}
+                    isSentByCurrentUser={isSentByCurrentUser}
+                /> */}
+
+                {/* Message content bubble with brief highlight for new items */}
                 <MessageBubble
                     content={message}
                     isSentByCurrentUser={isSentByCurrentUser}
+                    className={isFresh ? "animate-shake" : ""}
                 />
 
                 {/* Timestamp */}

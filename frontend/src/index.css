@@ -8,3 +8,37 @@ body {
     background-size: cover;
     background-position: center;
 }
+
+/* Subtle shake animation */
+@keyframes shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-2px);
+    }
+    40% {
+        transform: translateX(2px);
+    }
+    60% {
+        transform: translateX(-2px);
+    }
+    80% {
+        transform: translateX(2px);
+    }
+}
+
+.animate-shake {
+    animation: shake 0.45s ease-in-out both;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .animate-shake {
+        animation: none;
+    }
+}

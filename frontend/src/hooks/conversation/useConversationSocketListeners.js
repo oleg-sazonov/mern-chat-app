@@ -139,8 +139,19 @@ export const useConversationSocketListeners = () => {
                     timestamp: message.createdAt,
                     isSentByCurrentUser:
                         message.senderId?.toString() === authUser?.id,
+                    // mark for brief animation
+                    isFresh: true,
                 };
                 setMessages([...messagesRef.current, newMsg]);
+
+                // Clear the "fresh" flag shortly after mount to stop the highlight
+                setTimeout(() => {
+                    const cur = messagesRef.current || [];
+                    const next = cur.map((m) =>
+                        m.id === newMsg.id ? { ...m, isFresh: false } : m
+                    );
+                    setMessages(next);
+                }, 600);
 
                 // If it's an incoming message while this conversation is open,
                 // ensure server unreadCount stays 0 (debounced).
@@ -151,6 +162,11 @@ export const useConversationSocketListeners = () => {
                 ) {
                     scheduleMarkAsRead(conversationId);
                 }
+
+                // Optional: still play sound if app is not focused/visible
+                // if (isIncoming && (document.hidden || !document.hasFocus())) {
+                //     playNotification();
+                // }
             } else {
                 // Conversation not selected -> will show as unread -> play sound
                 if (isIncoming) {
