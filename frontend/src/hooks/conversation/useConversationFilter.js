@@ -5,7 +5,7 @@
  *
  * Purpose:
  *   - Provides a unified API for searching across both conversations and users.
- *   - Handles filtering, sorting, and selection logic for conversations and users.
+ *   - Handles filtering, sorting, limiting, and selection logic for conversations and users.
  *
  * Exports:
  *   - useConversationFilter: Filters and sorts conversations and users based on the search term.
@@ -31,6 +31,7 @@
  *   - Filters conversations by matching participant names or usernames with the search term.
  *   - Filters users by excluding the current user and users already in conversations.
  *   - Sorts conversations by `lastMessage.createdAt` in descending order (newest first).
+ *   - Limits the total number of results to 30 for better performance and usability.
  *   - Handles temporary conversations (IDs starting with "temp_") and marks them as selected if applicable.
  *
  * Helper Functions:
@@ -65,6 +66,8 @@ export const useConversationFilter = (
     isLoading = false,
     selectedConversation = null
 ) => {
+    const MAX_RESULTS = 30;
+
     // Helper to sort by last message time (newest first)
     const getLastMessageTime = (conv) =>
         new Date(conv?.lastMessage?.createdAt || 0).getTime();
@@ -141,9 +144,14 @@ export const useConversationFilter = (
             })),
         ];
 
+        const limitedItems = items.slice(0, MAX_RESULTS);
+
         return {
-            displayItems: items,
-            noResultsMessage: "No matches found",
+            displayItems: limitedItems,
+            noResultsMessage:
+                limitedItems.length === 0
+                    ? "No matches found"
+                    : "No matches found",
             isSearching: true,
         };
     }, [searchTerm, conversations, users, currentUserId, selectedConversation]);

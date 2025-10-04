@@ -56,7 +56,7 @@ function ensureSharedAudio() {
     sharedAudio.volume = 0.35;
     sharedAudio.crossOrigin = "anonymous";
     sharedAudio.playsInline = true;
-    console.log("sharedAudio created");
+    // console.log("sharedAudio created");
     return sharedAudio;
 }
 
@@ -72,7 +72,7 @@ export const useNotificationSound = () => {
                 await sharedAudio.play();
                 sharedAudio.pause();
                 sharedAudio.currentTime = 0;
-                console.log("audio unlocked (once)");
+                // console.log("audio unlocked (once)");
             } catch (err) {
                 // if play failed, we can try again on next user interaction
                 console.warn("unlock attempt failed:", err);

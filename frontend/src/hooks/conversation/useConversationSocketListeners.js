@@ -169,8 +169,18 @@ export const useConversationSocketListeners = () => {
                 // }
             } else {
                 // Conversation not selected -> will show as unread -> play sound
-                if (isIncoming) {
-                    playNotification(); // <-- play sound for unread
+                // if (isIncoming) {
+                //     playNotification(); // <-- play sound for unread
+                // }
+
+                const shouldPlaySound =
+                    isIncoming &&
+                    (selectedConversationRef.current?._id !== conversationId ||
+                        document.hidden ||
+                        !document.hasFocus());
+
+                if (shouldPlaySound) {
+                    playNotification();
                 }
 
                 // Fallback increment to avoid missed badges if server patch is delayed

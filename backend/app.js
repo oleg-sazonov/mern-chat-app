@@ -42,25 +42,33 @@
  *   - Configures middleware for logging, compression, and request parsing.
  *   - Sets up API routes for authentication, messaging, and user management.
  *   - Handles process-level events for graceful shutdown and error handling.
+ *   - Serves the React frontend build in production mode.
+ *   - Provides a fallback route for SPA (Single Page Application) routing.
  *
  * Functions:
  *   - `createApp()`:
  *       - Configures the Express application with middleware and routes.
+ *       - Serves static files from the frontend build directory in production.
+ *       - Provides a fallback route for React Router to handle client-side routing.
  *       - Returns the configured application instance.
  *   - `bootstrap()`:
  *       - Sets up process handlers for graceful shutdown and error handling.
  *       - Configures and starts the HTTP server with Socket.IO integration.
  *       - Returns the application, server, and configuration details.
  *
+ * SPA Fallback:
+ *   - Ensures that non-API GET requests (e.g., `/login`, `/signup`) return the `index.html` file from the frontend build directory.
+ *   - Skips API routes (`/api/*`), health checks (`/health`), and Socket.IO endpoints (`/socket.io`).
+ *
  * Example Workflow:
  *   1. Load environment variables using `dotenv`.
  *   2. Configure the Express application with middleware and routes.
- *   3. Initialize the Socket.IO server for real-time communication.
- *   4. Start the HTTP server and log the server details.
- *   5. Handle process-level events for graceful shutdown and error handling.
+ *   3. Serve static files and provide SPA fallback for React Router.
+ *   4. Initialize the Socket.IO server for real-time communication.
+ *   5. Start the HTTP server and log the server details.
+ *   6. Handle process-level events for graceful shutdown and error handling.
  */
 
-// import express from "express";
 import { app, server } from "./socket/socket.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -75,6 +83,7 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const frontendDistPath = path.join(__dirname, "/../frontend/dist");
 
 // Create and configure the Express application
 export const createApp = () => {
@@ -86,10 +95,22 @@ export const createApp = () => {
     console.log(`📍 Environment: ${NODE_ENV}`);
 
     // Setup basic middleware
-    setupBasicMiddlewares(socketIOApp, NODE_ENV);
+    setupBasicMiddlewares(socketIOApp, NODE_ENV, frontendDistPath);
 
     // Routes
     setupRoutes(socketIOApp);
+
+    // SPA fallback (skip API and health endpoints)
+    socketIOApp.use((req, res, next) => {
+        if (
+            req.method !== "GET" ||
+            req.path.startsWith("/api") ||
+            req.path === "/health"
+        ) {
+            return next();
+        }
+        res.sendFile(path.join(frontendDistPath, "index.html"));
+    });
 
     return socketIOApp;
 };
