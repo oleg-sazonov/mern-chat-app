@@ -17,6 +17,7 @@
  * - Generates a profile picture URL (RoboHash by default).
  * - Creates and saves the user in the database.
  * - Issues a JWT token and sets it as an HTTP-only cookie.
+ * - Emits a `user:created` event via Socket.IO to notify all connected clients.
  * - Responds with user info (excluding password) and a success message.
  * - Handles validation and server errors.
  *
@@ -37,11 +38,33 @@
  * - Handles validation and server errors.
  *
  * Dependencies:
- *   - bcrypt
- *   - User model
- *   - generateTokenAndSetCookie utility
+ *   - bcrypt: For hashing and comparing passwords.
+ *   - User model: For interacting with the `users` collection in MongoDB.
+ *   - generateTokenAndSetCookie utility: For generating JWT tokens and setting them as cookies.
+ *   - Socket.IO: For emitting real-time events to connected clients.
+ *
+ * Example Usage:
+ * ---------------
+ * - Signup:
+ *     POST /api/auth/signup
+ *     Body: {
+ *         "fullName": "John Doe",
+ *         "username": "johndoe",
+ *         "password": "Password123!",
+ *         "confirmPassword": "Password123!",
+ *         "gender": "male"
+ *     }
+ * - Login:
+ *     POST /api/auth/login
+ *     Body: {
+ *         "username": "johndoe",
+ *         "password": "Password123!"
+ *     }
+ * - Logout:
+ *     POST /api/auth/logout
  */
 
+import { io } from "../socket/socket.js";
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import generateTokenAndSetCookie from "../utils/generateToken.js";
@@ -77,8 +100,8 @@ export const signup = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Generate profile picture
-        const boyProfilePicture = `https://avatar.iran.liara.run/public/boy?username=${username}`;
-        const girlProfilePicture = `https://avatar.iran.liara.run/public/girl?username=${username}`;
+        // const boyProfilePicture = `https://avatar.iran.liara.run/public/boy?username=${username}`;
+        // const girlProfilePicture = `https://avatar.iran.liara.run/public/girl?username=${username}`;
 
         // Create new user
         // const newUser = new User({
@@ -109,6 +132,15 @@ export const signup = async (req, res) => {
             const token = generateTokenAndSetCookie(newUser, res);
 
             await newUser.save();
+
+            // Emit to all clients: a new user was created
+            io.emit("user:created", {
+                _id: newUser._id,
+                fullName: newUser.fullName,
+                username: newUser.username,
+                profilePicture: newUser.profilePicture,
+                createdAt: newUser.createdAt,
+            });
 
             res.status(201).json({
                 user: {

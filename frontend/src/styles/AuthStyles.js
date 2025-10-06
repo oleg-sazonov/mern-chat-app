@@ -49,7 +49,8 @@
  * Returns the class for the outer container.
  */
 export const getContainerClass = () => `
-  flex flex-col items-center justify-center min-w-96 mx-auto
+  flex flex-col items-center justify-center
+  w-full sm:min-w-96 sm:w-auto mx-auto
 `;
 
 /**
