@@ -1,7 +1,3 @@
 1) Browsers have significant restrictions on audio playback before user interaction. Attempt to unlock with muted audio. Now just after user "do something" on page audio notifications will enable.
 
-2) If new user signed up (this user will be added to db). If new user send a message to existing user, existing user will see a message correctly in sidebar as well as in MessageContainer. But new user (after sending message) will not see the response from the existing user in MessageContainer and will see only own sended messages. But in SidebarConversation new user will see unreaded count and last message. And if new user will click on SidebarConversation then gets full conversation with all messages inside MessageContainer.
-
-Bug is fixed but only on develop. If I run: `npm run build` and try to run on localhost:5000 using npm start -> Socket.IO won't work (but with `npm run frontend` and `npm run server` everything working good).
-
-3) Add dynamic validation tips for both Login and Signup.
+2) Add dynamic validation tips for both Login and Signup.
