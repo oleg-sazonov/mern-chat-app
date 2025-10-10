@@ -64,15 +64,6 @@
  *           - "Confirm password is required."
  *           - "Passwords do not match."
  *
- *   - gender:
- *       - Type: string (enum: "male", "female")
- *       - Validation:
- *           - Required.
- *           - Must be either "male" or "female".
- *       - Error Messages:
- *           - "Gender is required."
- *           - "Gender must be either 'male' or 'female'."
- *
  *   - profilePicture:
  *       - Type: string (optional)
  *       - Validation:
@@ -115,7 +106,6 @@
  *           username: "johndoe",
  *           password: "Password123!",
  *           confirmPassword: "Password123!",
- *           gender: "male",
  *           profilePicture: "https://example.com/avatar.png",
  *       });
  *
@@ -159,9 +149,6 @@ export const signupSchema = Yup.object().shape({
     confirmPassword: Yup.string()
         .required("Confirm password is required")
         .oneOf([Yup.ref("password"), null], "Passwords do not match"),
-    gender: Yup.string()
-        .required("Gender is required")
-        .oneOf(["male", "female"], "Gender is required"),
     profilePicture: Yup.string()
         .url("Profile picture must be a valid URL")
         .notRequired(),

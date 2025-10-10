@@ -63,7 +63,6 @@
  *           "_id": "12345",
  *           "fullName": "John Doe",
  *           "username": "johndoe",
- *           "gender": "male",
  *           "profilePicture": "https://example.com/avatar.png",
  *           "createdAt": "2023-01-01T00:00:00.000Z",
  *           "updatedAt": "2023-01-10T00:00:00.000Z"
@@ -98,7 +97,6 @@ export const getCurrentUser = async (req, res) => {
             _id: user._id,
             fullName: user.fullName,
             username: user.username,
-            gender: user.gender,
             profilePicture: user.profilePicture,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,

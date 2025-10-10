@@ -7,18 +7,16 @@
  *   - SignUp: Renders the signup form for new user registration.
  *
  * State:
- *   - inputs: Stores form values (fullName, username, password, confirmPassword, gender).
+ *   - inputs: Stores form values (fullName, username, password, confirmPassword).
  *
  * Functions:
  *   - handleInputs(e): Updates the `inputs` state based on form changes.
- *   - handleCheckboxChange(gender): Updates the gender selection in the `inputs` state.
  *   - handleSubmit(e): Handles form submission using the `useSignup` hook.
  *
  * Layout:
  *   - PageTransition: Wraps the signup form with smooth animations for route transitions.
  *   - FormContainer: Wraps the signup form with a styled container.
  *   - FormInput: Reusable input fields for full name, username, password, and confirm password.
- *   - GenderCheckbox: Radio button group for gender selection.
  *   - FormButton: Submit button for the signup form.
  *   - FormFooter: Displays a link to the login page for existing users.
  *
@@ -38,7 +36,6 @@ import FormContainer from "../../components/form/FormContainer";
 import FormInput from "../../components/form/FormInput";
 import FormButton from "../../components/form/FormButton";
 import FormFooter from "../../components/form/FormFooter";
-import GenderCheckbox from "../../components/form/GenderCheckbox";
 import PageTransition from "../../components/transitions/PageTransition";
 
 const SignUp = () => {
@@ -47,7 +44,6 @@ const SignUp = () => {
         username: "",
         password: "",
         confirmPassword: "",
-        gender: "",
     });
 
     const { loading, handleSignup } = useSignup();
@@ -55,10 +51,6 @@ const SignUp = () => {
     const handleInputs = (e) => {
         const { name, value } = e.target;
         setInputs({ ...inputs, [name]: value });
-    };
-
-    const handleCheckboxChange = (gender) => {
-        setInputs({ ...inputs, gender });
     };
 
     const handleSubmit = async (e) => {
@@ -71,7 +63,6 @@ const SignUp = () => {
             username: inputs.username,
             password: inputs.password,
             confirmPassword: inputs.confirmPassword,
-            gender: inputs.gender,
         });
     };
 
@@ -124,13 +115,7 @@ const SignUp = () => {
                             onChange={handleInputs}
                         />
                     </div>
-
-                    <GenderCheckbox
-                        onCheckboxChange={handleCheckboxChange}
-                        selectedGender={inputs.gender}
-                    />
-
-                    <div>
+                    <div className="mt-6">
                         <FormButton disabled={loading}>Sign Up</FormButton>
                     </div>
                 </form>

@@ -17,7 +17,6 @@
  *       - username (string): The username of the user (required).
  *       - password (string): The password of the user (required).
  *       - confirmPassword (string): The confirmation password (required).
- *       - gender (string): The gender of the user (required).
  *
  * Returns:
  *   - (Object): Returns an object with the following structure:
@@ -36,7 +35,6 @@
  *       username: "johndoe",
  *       password: "password123",
  *       confirmPassword: "password123",
- *       gender: "male",
  *   });
  *   if (isValid) {
  *       // Proceed with signup
@@ -79,12 +77,11 @@ export const validateAuthInputs = async ({
     username,
     password,
     confirmPassword,
-    gender,
 }) => {
     try {
         // Validate inputs using Yup schema
         await signupSchema.validate(
-            { fullName, username, password, confirmPassword, gender },
+            { fullName, username, password, confirmPassword },
             { abortEarly: false } // Collect all validation errors
         );
         return { isValid: true }; // Validation passed

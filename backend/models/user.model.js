@@ -26,12 +26,6 @@
  *       - Minimum Length: 6 characters.
  *       - Description: The hashed password of the user.
  *
- *   - gender:
- *       - Type: String.
- *       - Enum: ["male", "female"].
- *       - Required: Yes.
- *       - Description: The gender of the user.
- *
  *   - profilePicture:
  *       - Type: String.
  *       - Default: "" (empty string).
@@ -72,11 +66,6 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             minLength: 6,
-        },
-        gender: {
-            type: String,
-            enum: ["male", "female"],
-            required: true,
         },
         profilePicture: {
             type: String,

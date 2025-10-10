@@ -23,7 +23,6 @@
  *   - username (string): The username of the user.
  *   - password (string): The password of the user.
  *   - confirmPassword (string): The confirmation password to match the password.
- *   - gender (string): The gender of the user.
  *
  * Returns:
  *   - handleSignup (function): Function to initiate the signup process.
@@ -45,7 +44,6 @@
  *           username: "johndoe",
  *           password: "password123",
  *           confirmPassword: "password123",
- *           gender: "male",
  *       });
  */
 
@@ -66,7 +64,6 @@ export const useSignup = () => {
         username,
         password,
         confirmPassword,
-        gender,
     }) => {
         // Validate inputs
         const { isValid } = await validateAuthInputs({
@@ -74,7 +71,6 @@ export const useSignup = () => {
             username,
             password,
             confirmPassword,
-            gender,
         });
 
         if (!isValid) return; // Stop if validation fails
@@ -90,7 +86,6 @@ export const useSignup = () => {
                 username,
                 password,
                 confirmPassword,
-                gender,
             });
 
             const userToStore = {
