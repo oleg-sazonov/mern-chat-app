@@ -84,13 +84,24 @@ export const SocketContextProvider = ({ children }) => {
         // When currentUser changes
         if (currentUser) {
             // Use environment variable or window.location for production
-            const backendUrl = import.meta.env.PROD
-                ? "https://mern-chat-app-lg6e.onrender.com"
-                : "http://localhost:5000";
+            // const backendUrl = import.meta.env.PROD
+            //     ? "https://mern-chat-app-lg6e.onrender.com"
+            //     : "http://localhost:5000";
+            // const newSocket = io(backendUrl, {
+            //     withCredentials: true, // send httpOnly jwt cookie
+            //     transports: ["websocket", "polling"],
+            // });
+
+            const backendUrl =
+                import.meta.env.VITE_SOCKET_URL ||
+                (import.meta.env.PROD
+                    ? window.location.origin
+                    : "http://localhost:5000");
             const newSocket = io(backendUrl, {
-                withCredentials: true, // send httpOnly jwt cookie
+                withCredentials: true,
                 transports: ["websocket", "polling"],
             });
+
             socketRef.current = newSocket;
             setSocket(newSocket);
 

@@ -72,6 +72,7 @@ export const useConversationSocketListeners = () => {
         messages,
         conversations,
         setConversations,
+        setSelectedConversation,
     } = useConversation();
 
     const { authUser } = useAuthContext();
@@ -237,21 +238,75 @@ export const useConversationSocketListeners = () => {
         const handleConversationCreated = (conv) => {
             if (conversationsRef.current.find((c) => c._id === conv._id))
                 return;
-            setConversations([
-                ...conversationsRef.current,
-                {
-                    ...conv,
-                    lastMessage: conv.lastMessage
-                        ? {
-                              ...conv.lastMessage,
-                              content:
-                                  conv.lastMessage.content ??
-                                  conv.lastMessage.message ??
-                                  "",
-                          }
-                        : null,
-                },
-            ]);
+
+            const currentSelected = selectedConversationRef.current;
+
+            const merged = {
+                ...conv,
+                lastMessage: conv.lastMessage
+                    ? {
+                          ...conv.lastMessage,
+                          content:
+                              conv.lastMessage.content ??
+                              conv.lastMessage.message ??
+                              "",
+                      }
+                    : null,
+            };
+
+            const tempSelection =
+                currentSelected?._id?.startsWith("temp_") &&
+                currentSelected.participants?.[0];
+
+            if (tempSelection) {
+                const targetUserId = tempSelection._id?.toString();
+                const containsTarget = Array.isArray(conv.participants)
+                    ? conv.participants.some((p) =>
+                          (typeof p === "string" ? p : p?._id)
+                              ?.toString()
+                              .includes(targetUserId)
+                      )
+                    : false;
+
+                if (containsTarget) {
+                    merged.participants =
+                        Array.isArray(conv.participants) &&
+                        conv.participants.some(
+                            (p) =>
+                                typeof p === "object" &&
+                                p !== null &&
+                                "fullName" in p
+                        )
+                            ? conv.participants
+                            : [
+                                  tempSelection,
+                                  currentSelected.participants?.find(
+                                      (p) => p._id !== tempSelection._id
+                                  ),
+                              ].filter(Boolean);
+
+                    setSelectedConversation(merged);
+                    setMessages([]);
+                }
+            }
+
+            setConversations([...conversationsRef.current, merged]);
+
+            // setConversations([
+            //     ...conversationsRef.current,
+            //     {
+            //         ...conv,
+            //         lastMessage: conv.lastMessage
+            //             ? {
+            //                   ...conv.lastMessage,
+            //                   content:
+            //                       conv.lastMessage.content ??
+            //                       conv.lastMessage.message ??
+            //                       "",
+            //               }
+            //             : null,
+            //     },
+            // ]);
         };
 
         socket.on("message:new", handleNewMessage);
@@ -271,3 +326,96 @@ export const useConversationSocketListeners = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket, authUser, setMessages, setConversations]);
 };
+
+// import { useEffect, useRef } from "react";
+// import useConversation from "../../store/zustand/useConversation";
+// import { useAuthContext } from "../../store/AuthContext";
+// import { useSocketContext } from "../../store/SocketContext";
+// import { useNotificationSound } from "../ui/useNotificationSound";
+
+// import { createMarkAsReadScheduler } from "./socketHandlers/markReadScheduler.js";
+// import { createNewMessageHandler } from "./socketHandlers/newMessageHandler.js";
+// import { createConversationUpdatedHandler } from "./socketHandlers/conversationUpdatedHandler.js";
+// import { createConversationCreatedHandler } from "./socketHandlers/conversationCreatedHandler.js";
+
+// export const useConversationSocketListeners = () => {
+//     const {
+//         selectedConversation,
+//         setMessages,
+//         messages,
+//         conversations,
+//         setConversations,
+//         setSelectedConversation,
+//     } = useConversation();
+
+//     const { authUser } = useAuthContext();
+//     const { socket } = useSocketContext();
+//     const { playNotification } = useNotificationSound();
+
+//     // Refs to avoid stale closures
+//     const messagesRef = useRef(messages);
+//     const selectedConversationRef = useRef(selectedConversation);
+//     const conversationsRef = useRef(conversations);
+//     const markReadTimersRef = useRef(new Map());
+
+//     useEffect(() => {
+//         messagesRef.current = messages;
+//     }, [messages]);
+//     useEffect(() => {
+//         selectedConversationRef.current = selectedConversation;
+//     }, [selectedConversation]);
+//     useEffect(() => {
+//         conversationsRef.current = conversations;
+//     }, [conversations]);
+
+//     useEffect(() => {
+//         if (!socket) return;
+
+//         const scheduleMarkAsRead = createMarkAsReadScheduler({
+//             markReadTimersRef,
+//             conversationsRef,
+//             setConversations,
+//         });
+
+//         const handleNewMessage = createNewMessageHandler({
+//             authUser,
+//             messagesRef,
+//             selectedConversationRef,
+//             conversationsRef,
+//             setMessages,
+//             setConversations,
+//             playNotification,
+//             scheduleMarkAsRead,
+//         });
+
+//         const handleConversationUpdated = createConversationUpdatedHandler({
+//             conversationsRef,
+//             selectedConversationRef,
+//             setConversations,
+//         });
+
+//         const handleConversationCreated = createConversationCreatedHandler({
+//             conversationsRef,
+//             selectedConversationRef,
+//             setConversations,
+//             setSelectedConversation,
+//             setMessages,
+//         });
+
+//         socket.on("message:new", handleNewMessage);
+//         socket.on("conversation:updated", handleConversationUpdated);
+//         socket.on("conversation:created", handleConversationCreated);
+
+//         return () => {
+//             socket.off("message:new", handleNewMessage);
+//             socket.off("conversation:updated", handleConversationUpdated);
+//             socket.off("conversation:created", handleConversationCreated);
+
+//             // Clear any pending timers
+//             markReadTimersRef.current.forEach((t) => clearTimeout(t));
+//             // eslint-disable-next-line react-hooks/exhaustive-deps
+//             markReadTimersRef.current.clear();
+//         };
+//         // eslint-disable-next-line react-hooks/exhaustive-deps
+//     }, [socket, authUser, setMessages, setConversations]);
+// };
