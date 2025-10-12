@@ -56,8 +56,34 @@ const FormInput = ({
     value,
     onChange,
     placeholder,
+    onBlur,
+    hasError = false,
+    isSuccess = false,
+    helperText = "",
+    className = "",
+    showHelper = true,
 }) => {
+    const baseClass = getInputClass();
+    const stateClass = hasError
+        ? "input-error"
+        : isSuccess
+        ? "input-success"
+        : "";
     return (
+        // <div className="space-y-2">
+        //     <label htmlFor={id} className={getLabelClass()}>
+        //         {label}
+        //     </label>
+        //     <input
+        //         id={id}
+        //         name={name}
+        //         type={type}
+        //         placeholder={placeholder}
+        //         className={getInputClass()}
+        //         value={value}
+        //         onChange={onChange}
+        //     />
+        // </div>
         <div className="space-y-2">
             <label htmlFor={id} className={getLabelClass()}>
                 {label}
@@ -67,10 +93,20 @@ const FormInput = ({
                 name={name}
                 type={type}
                 placeholder={placeholder}
-                className={getInputClass()}
                 value={value}
                 onChange={onChange}
+                onBlur={onBlur}
+                className={`${baseClass} ${stateClass} ${className}`.trim()}
             />
+            {showHelper && helperText && (
+                <p
+                    className={`text-xs ${
+                        hasError ? "text-error" : "text-white/60"
+                    }`}
+                >
+                    {helperText}
+                </p>
+            )}
         </div>
     );
 };

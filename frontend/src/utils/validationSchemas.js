@@ -144,7 +144,7 @@ export const signupSchema = Yup.object().shape({
         .matches(/[0-9]/, "Password must contain at least one number")
         .matches(
             /[@$!%*?&#]/,
-            "Password must contain at least one special character (@, $, !, %, *, ?, &, #)"
+            "Password must include a special character (@, $, !, %, *, ?, &, #)"
         ),
     confirmPassword: Yup.string()
         .required("Confirm password is required")

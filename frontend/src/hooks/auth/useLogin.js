@@ -47,7 +47,7 @@ import { useAuthContext } from "../../store/AuthContext";
 import { validateLoginInputs } from "../../utils/validationUtils";
 import { apiRequest } from "../../utils/apiUtils";
 
-const useLogin = () => {
+export const useLogin = () => {
     const [loading, setLoading] = useState(false);
     const { setAuthUser } = useAuthContext();
 
@@ -88,5 +88,3 @@ const useLogin = () => {
 
     return { handleLogin, loading };
 };
-
-export default useLogin;

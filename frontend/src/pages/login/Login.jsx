@@ -32,9 +32,11 @@
  *   - Referenced in `Home.jsx` to manage user authentication state and navigation.
  */
 
-import { useState } from "react";
-
-import useLogin from "../../hooks/auth/useLogin";
+import { useEffect, useMemo, useState } from "react";
+import { useLogin } from "../../hooks/auth/useLogin";
+import { loginSchema } from "../../utils/validationSchemas";
+import { extractErrors } from "../../utils/extractErrors";
+import { getUsernameTips, getPasswordTips } from "../../utils/validationTips";
 import { getInputWrapperClass } from "../../styles/AuthStyles";
 
 import FormContainer from "../../components/form/FormContainer";
@@ -42,35 +44,80 @@ import FormInput from "../../components/form/FormInput";
 import FormButton from "../../components/form/FormButton";
 import FormFooter from "../../components/form/FormFooter";
 import PageTransition from "../../components/transitions/PageTransition";
+import ValidationChecklist from "../../components/form/ValidationChecklist";
 
 const Login = () => {
-    const [inputs, setInputs] = useState({
-        username: "",
-        password: "",
-    });
+    const [inputs, setInputs] = useState({ username: "", password: "" });
+    const [errors, setErrors] = useState({});
+    const [touched, setTouched] = useState({});
     const { loading, handleLogin } = useLogin();
+
+    useEffect(() => {
+        let mounted = true;
+        const validate = async () => {
+            try {
+                await loginSchema.validate(inputs, { abortEarly: false });
+                if (mounted) setErrors({});
+            } catch (error) {
+                if (!mounted) return;
+                setErrors(extractErrors(error));
+            }
+        };
+        validate();
+        return () => {
+            mounted = false;
+        };
+    }, [inputs]);
 
     const handleInputs = (e) => {
         const { name, value } = e.target;
-        setInputs({ ...inputs, [name]: value });
+        setInputs((prev) => ({ ...prev, [name]: value }));
+        setErrors((prev) => {
+            if (!prev?.[name]) return prev;
+            const { [name]: _removed, ...rest } = prev;
+            return rest;
+        });
+    };
+
+    const handleBlur = (e) => {
+        const { name } = e.target;
+        setTouched((prev) => ({ ...prev, [name]: true }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (loading) return;
 
-        if (loading) return; // Prevent multiple submissions while loading
+        try {
+            await loginSchema.validate(inputs, { abortEarly: false });
+        } catch (error) {
+            setErrors(extractErrors(error));
+            setTouched({ username: true, password: true });
+            return;
+        }
 
-        // Login logic will be implemented here
         await handleLogin({
             username: inputs.username,
             password: inputs.password,
         });
     };
 
+    const usernameTips = useMemo(
+        () => getUsernameTips(inputs.username),
+        [inputs.username]
+    );
+    const isUsernameComplete = usernameTips.every((tip) => tip.satisfied);
+
+    const passwordTips = useMemo(
+        () => getPasswordTips(inputs.password),
+        [inputs.password]
+    );
+    const isPasswordComplete = passwordTips.every((tip) => tip.satisfied);
+
     return (
         <PageTransition type="auth">
             <FormContainer title="Login">
-                <form className="space-y-4" onSubmit={handleSubmit}>
+                <form className="space-y-4" onSubmit={handleSubmit} noValidate>
                     <div className={getInputWrapperClass()}>
                         <FormInput
                             id="username"
@@ -80,6 +127,22 @@ const Login = () => {
                             placeholder="Enter username"
                             value={inputs.username}
                             onChange={handleInputs}
+                            onBlur={handleBlur}
+                            hasError={
+                                touched.username && Boolean(errors.username)
+                            }
+                            isSuccess={
+                                touched.username &&
+                                isUsernameComplete &&
+                                !errors.username
+                            }
+                            helperText={
+                                touched.username ? errors.username ?? "" : ""
+                            }
+                        />
+                        <ValidationChecklist
+                            title="Username reminder"
+                            items={usernameTips}
                         />
                     </div>
 
@@ -92,6 +155,22 @@ const Login = () => {
                             placeholder="Enter password"
                             value={inputs.password}
                             onChange={handleInputs}
+                            onBlur={handleBlur}
+                            hasError={
+                                touched.password && Boolean(errors.password)
+                            }
+                            isSuccess={
+                                touched.password &&
+                                isPasswordComplete &&
+                                !errors.password
+                            }
+                            helperText={
+                                touched.password ? errors.password ?? "" : ""
+                            }
+                        />
+                        <ValidationChecklist
+                            title="Password reminder"
+                            items={passwordTips}
                         />
                     </div>
 
