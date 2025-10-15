@@ -1,35 +1,57 @@
 /**
  * Login Component
- * --------------
+ * ---------------
  * Handles user login functionality.
  *
- * Exports:
- *   - Login: Renders the login form for user authentication.
+ * Purpose:
+ *   - Provides a user interface for logging in with username and password.
+ *   - Validates user inputs dynamically and displays validation tips.
+ *   - Submits the form to authenticate the user.
  *
  * State:
- *   - inputs: Stores form values (username and password).
+ *   - `inputs`: Stores form values (username, password).
+ *   - `errors`: Stores validation errors for each field.
+ *   - `touched`: Tracks whether a field has been interacted with.
+ *
+ * Hooks:
+ *   - `useLogin`: Custom hook for handling login API requests.
+ *   - `useEffect`: Validates inputs whenever they change.
+ *   - `useMemo`: Optimizes validation tips computation for each field.
  *
  * Functions:
- *   - handleInputs(e): Updates the `inputs` state based on form changes.
- *   - handleSubmit(e): Handles form submission using the `useLogin` hook.
+ *   - `handleInputs(e)`: Updates the `inputs` state and clears errors for the field being updated.
+ *   - `handleBlur(e)`: Marks a field as touched when it loses focus.
+ *   - `handleSubmit(e)`: Validates the form and submits the login request.
+ *
+ * Validation:
+ *   - Uses `loginSchema` (Yup schema) for input validation.
+ *   - Displays validation tips dynamically using `ValidationChecklist`.
+ *   - Clears error messages when the user starts typing in a field.
  *
  * Layout:
- *   - PageTransition: Wraps the login form with smooth animations for route transitions.
- *   - FormContainer: Wraps the login form with a styled container.
- *   - FormInput: Reusable input fields for username and password.
- *   - FormButton: Submit button for the login form.
- *   - FormFooter: Displays a link to the signup page for new users.
+ *   - `PageTransition`: Wraps the login form with smooth animations for route transitions.
+ *   - `FormContainer`: Provides a styled container for the form.
+ *   - `FormInput`: Reusable input fields for username and password.
+ *   - `ValidationChecklist`: Displays dynamic validation tips for each field.
+ *   - `FormButton`: Submit button for the login form.
+ *   - `FormFooter`: Displays a link to the signup page for new users.
  *
- * Usage:
- *   - This component is rendered in `App.jsx` as part of the `/login` route.
- *   - Manages user authentication state using the `useLogin` hook.
- *
- * Example:
- *   - Rendered in `App.jsx`:
+ * Example Usage:
+ *   - Rendered in `App.jsx` as part of the `/login` route:
  *       <Route path="/login" element={<Login />} />
  *
- * Related Components:
- *   - Referenced in `Home.jsx` to manage user authentication state and navigation.
+ * Example Workflow:
+ *   1. User enters their username and password in the form fields.
+ *   2. Validation tips update dynamically as the user types.
+ *   3. On form submission:
+ *       - If validation passes, the `handleLogin` function is called to authenticate the user.
+ *       - If validation fails, error messages are displayed under the respective fields.
+ *
+ * Dependencies:
+ *   - `useLogin`: Handles API requests for user login.
+ *   - `loginSchema`: Yup schema for validating form inputs.
+ *   - `ValidationChecklist`: Displays validation tips for each field.
+ *   - `FormInput`, `FormButton`, `FormFooter`: Reusable form components.
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -50,6 +72,7 @@ const Login = () => {
     const [inputs, setInputs] = useState({ username: "", password: "" });
     const [errors, setErrors] = useState({});
     const [touched, setTouched] = useState({});
+    const [formError, setFormError] = useState("");
     const { loading, handleLogin } = useLogin();
 
     useEffect(() => {
@@ -72,6 +95,7 @@ const Login = () => {
     const handleInputs = (e) => {
         const { name, value } = e.target;
         setInputs((prev) => ({ ...prev, [name]: value }));
+        setFormError("");
         setErrors((prev) => {
             if (!prev?.[name]) return prev;
             const { [name]: _removed, ...rest } = prev;
@@ -96,10 +120,25 @@ const Login = () => {
             return;
         }
 
-        await handleLogin({
+        const result = await handleLogin({
             username: inputs.username,
             password: inputs.password,
         });
+
+        if (!result?.success && result?.errorMessage) {
+            setFormError(
+                result.errorMessage.includes("Invalid username or password")
+                    ? "Username or password do not match."
+                    : result.errorMessage
+            );
+        } else {
+            setFormError("");
+        }
+
+        // await handleLogin({
+        //     username: inputs.username,
+        //     password: inputs.password,
+        // });
     };
 
     const usernameTips = useMemo(
@@ -140,10 +179,10 @@ const Login = () => {
                                 touched.username ? errors.username ?? "" : ""
                             }
                         />
-                        <ValidationChecklist
+                        {/* <ValidationChecklist
                             title="Username reminder"
                             items={usernameTips}
-                        />
+                        /> */}
                     </div>
 
                     <div className={getInputWrapperClass()}>
@@ -168,11 +207,17 @@ const Login = () => {
                                 touched.password ? errors.password ?? "" : ""
                             }
                         />
-                        <ValidationChecklist
+                        {/* <ValidationChecklist
                             title="Password reminder"
                             items={passwordTips}
-                        />
+                        /> */}
                     </div>
+
+                    {formError && (
+                        <div className="alert alert-error flex justify-center bg-error/20 border border-error/40 text-sm text-error">
+                            {formError}
+                        </div>
+                    )}
 
                     <div className="mt-6">
                         <FormButton disabled={loading}>Login</FormButton>

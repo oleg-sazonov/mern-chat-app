@@ -3,30 +3,55 @@
  * -----------------
  * Handles new user registration functionality.
  *
- * Exports:
- *   - SignUp: Renders the signup form for new user registration.
+ * Purpose:
+ *   - Provides a user interface for signing up with full name, username, password, and confirm password fields.
+ *   - Validates user inputs dynamically and displays validation tips.
+ *   - Submits the form to create a new user account.
  *
  * State:
- *   - inputs: Stores form values (fullName, username, password, confirmPassword).
+ *   - `inputs`: Stores form values (fullName, username, password, confirmPassword).
+ *   - `errors`: Stores validation errors for each field.
+ *   - `touched`: Tracks whether a field has been interacted with.
+ *
+ * Hooks:
+ *   - `useSignup`: Custom hook for handling signup API requests.
+ *   - `useEffect`: Validates inputs whenever they change.
+ *   - `useMemo`: Optimizes validation tips computation for each field.
  *
  * Functions:
- *   - handleInputs(e): Updates the `inputs` state based on form changes.
- *   - handleSubmit(e): Handles form submission using the `useSignup` hook.
+ *   - `handleInputs(e)`: Updates the `inputs` state and clears errors for the field being updated.
+ *   - `handleBlur(e)`: Marks a field as touched when it loses focus.
+ *   - `handleSubmit(e)`: Validates the form and submits the signup request.
+ *
+ * Validation:
+ *   - Uses `signupSchema` (Yup schema) for input validation.
+ *   - Displays validation tips dynamically using `ValidationChecklist`.
+ *   - Clears error messages when the user starts typing in a field.
  *
  * Layout:
- *   - PageTransition: Wraps the signup form with smooth animations for route transitions.
- *   - FormContainer: Wraps the signup form with a styled container.
- *   - FormInput: Reusable input fields for full name, username, password, and confirm password.
- *   - FormButton: Submit button for the signup form.
- *   - FormFooter: Displays a link to the login page for existing users.
+ *   - `PageTransition`: Wraps the signup form with smooth animations for route transitions.
+ *   - `FormContainer`: Provides a styled container for the form.
+ *   - `FormInput`: Reusable input fields for full name, username, password, and confirm password.
+ *   - `ValidationChecklist`: Displays dynamic validation tips for each field.
+ *   - `FormButton`: Submit button for the signup form.
+ *   - `FormFooter`: Displays a link to the login page for existing users.
  *
- * Usage:
- *   - This component is rendered in `App.jsx` as part of the `/signup` route.
- *   - Manages form state and submission using the `useSignup` hook.
- *
- * Example:
- *   - Rendered in `App.jsx`:
+ * Example Usage:
+ *   - Rendered in `App.jsx` as part of the `/signup` route:
  *       <Route path="/signup" element={<SignUp />} />
+ *
+ * Example Workflow:
+ *   1. User enters their details in the form fields.
+ *   2. Validation tips update dynamically as the user types.
+ *   3. On form submission:
+ *       - If validation passes, the `handleSignup` function is called to create the account.
+ *       - If validation fails, error messages are displayed under the respective fields.
+ *
+ * Dependencies:
+ *   - `useSignup`: Handles API requests for user signup.
+ *   - `signupSchema`: Yup schema for validating form inputs.
+ *   - `ValidationChecklist`: Displays validation tips for each field.
+ *   - `FormInput`, `FormButton`, `FormFooter`: Reusable form components.
  */
 
 import { useEffect, useMemo, useState } from "react";

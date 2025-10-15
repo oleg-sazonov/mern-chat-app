@@ -53,7 +53,7 @@
  *           - "Password must contain at least one uppercase letter."
  *           - "Password must contain at least one lowercase letter."
  *           - "Password must contain at least one number."
- *           - "Password must contain at least one special character (@, $, !, %, *, ?, &, #)."
+ *           - "Password must include a special character (@, $, !, %, *, ?, &, #)."
  *
  *   - confirmPassword:
  *       - Type: string
@@ -91,10 +91,18 @@
  *           - Required.
  *           - Minimum 6 characters.
  *           - Maximum 100 characters.
+ *           - Must contain at least one uppercase letter.
+ *           - Must contain at least one lowercase letter.
+ *           - Must contain at least one number.
+ *           - Must contain at least one special character (@, $, !, %, *, ?, &, #).
  *       - Error Messages:
  *           - "Password is required."
  *           - "Password must be at least 6 characters."
  *           - "Password must not exceed 100 characters."
+ *           - "Password must contain at least one uppercase letter."
+ *           - "Password must contain at least one lowercase letter."
+ *           - "Password must contain at least one number."
+ *           - "Password must include a special character (@, $, !, %, *, ?, &, #)."
  *
  * Usage:
  *   - Used in `SignUp.jsx` and `Login.jsx` to validate user inputs before form submission.
@@ -162,5 +170,12 @@ export const loginSchema = Yup.object().shape({
     password: Yup.string()
         .required("Password is required")
         .min(6, "Password must be at least 6 characters")
-        .max(100, "Password must not exceed 100 characters"),
+        .max(100, "Password must not exceed 100 characters")
+        .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+        .matches(/[0-9]/, "Password must contain at least one number")
+        .matches(
+            /[@$!%*?&#]/,
+            "Password must include a special character (@, $, !, %, *, ?, &, #)"
+        ),
 });
