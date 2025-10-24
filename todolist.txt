@@ -1,7 +1,1 @@
 1) Browsers have significant restrictions on audio playback before user interaction. Attempt to unlock with muted audio. Now just after user "do something" on page audio notifications will enable.
-
-2) Add dynamic validation tips for both Login and Signup.
-
-    Extract handleInputs and handleBlur to separate file.
-
-    Continue to test validation.

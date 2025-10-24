@@ -12,10 +12,11 @@
  *   - `inputs`: Stores form values (fullName, username, password, confirmPassword).
  *   - `errors`: Stores validation errors for each field.
  *   - `touched`: Tracks whether a field has been interacted with.
+ *   - `isShortViewport`: Tracks whether the viewport height is less than 950px.
  *
  * Hooks:
  *   - `useSignup`: Custom hook for handling signup API requests.
- *   - `useEffect`: Validates inputs whenever they change.
+ *   - `useEffect`: Validates inputs whenever they change and tracks viewport height.
  *   - `useMemo`: Optimizes validation tips computation for each field.
  *
  * Functions:
@@ -64,6 +65,7 @@ import {
     getPasswordTips,
     getConfirmPasswordTips,
 } from "../../utils/validationTips";
+import { createHandleInputs, createHandleBlur } from "../../utils/formHandlers";
 import { getInputWrapperClass } from "../../styles/AuthStyles";
 
 import FormContainer from "../../components/form/FormContainer";
@@ -101,20 +103,19 @@ const SignUp = () => {
         };
     }, [inputs]);
 
-    const handleInputs = (e) => {
-        const { name, value } = e.target;
-        setInputs((prev) => ({ ...prev, [name]: value }));
-        setErrors((prev) => {
-            if (!prev?.[name]) return prev;
-            const { [name]: _removed, ...rest } = prev;
-            return rest;
-        });
-    };
+    // Enable scroll on short viewports (< 950px)
+    const [isShortViewport, setIsShortViewport] = useState(
+        typeof window !== "undefined" ? window.innerHeight < 950 : false
+    );
 
-    const handleBlur = (e) => {
-        const { name } = e.target;
-        setTouched((prev) => ({ ...prev, [name]: true }));
-    };
+    useEffect(() => {
+        const onResize = () => setIsShortViewport(window.innerHeight < 950);
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, []);
+
+    const handleInputs = createHandleInputs({ setInputs, setErrors });
+    const handleBlur = createHandleBlur({ setTouched });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -166,135 +167,153 @@ const SignUp = () => {
     const isConfirmComplete = confirmPasswordTips.every((tip) => tip.satisfied);
 
     return (
-        <PageTransition type="auth">
-            <FormContainer title="Sign Up">
-                <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-                    <div className={getInputWrapperClass()}>
-                        <FormInput
-                            id="fullName"
-                            name="fullName"
-                            label="Full Name"
-                            placeholder="Enter your full name"
-                            value={inputs.fullName}
-                            onChange={handleInputs}
-                            onBlur={handleBlur}
-                            hasError={
-                                touched.fullName && Boolean(errors.fullName)
-                            }
-                            isSuccess={
-                                touched.fullName &&
-                                isFullNameComplete &&
-                                !errors.fullName
-                            }
-                            helperText={
-                                touched.fullName ? errors.fullName ?? "" : ""
-                            }
-                        />
-                        <ValidationChecklist
-                            title="Full name tips"
-                            items={fullNameTips}
-                        />
-                    </div>
+        <div
+            className={
+                isShortViewport
+                    ? "w-full h-full overflow-auto flex items-start justify-center"
+                    : "w-full h-full overflow-hidden flex items-center justify-center"
+            }
+        >
+            <PageTransition type="auth">
+                <FormContainer title="Sign Up">
+                    <form
+                        className="space-y-4"
+                        onSubmit={handleSubmit}
+                        noValidate
+                    >
+                        <div className={getInputWrapperClass()}>
+                            <FormInput
+                                id="fullName"
+                                name="fullName"
+                                label="Full Name"
+                                placeholder="Enter your full name"
+                                value={inputs.fullName}
+                                onChange={handleInputs}
+                                onBlur={handleBlur}
+                                hasError={
+                                    touched.fullName && Boolean(errors.fullName)
+                                }
+                                isSuccess={
+                                    touched.fullName &&
+                                    isFullNameComplete &&
+                                    !errors.fullName
+                                }
+                                helperText={
+                                    touched.fullName
+                                        ? errors.fullName ?? ""
+                                        : ""
+                                }
+                            />
+                            <ValidationChecklist
+                                title="Full name tips"
+                                items={fullNameTips}
+                            />
+                        </div>
 
-                    <div className={getInputWrapperClass()}>
-                        <FormInput
-                            id="username"
-                            name="username"
-                            label="Username"
-                            placeholder="Enter username"
-                            value={inputs.username}
-                            onChange={handleInputs}
-                            onBlur={handleBlur}
-                            hasError={
-                                touched.username && Boolean(errors.username)
-                            }
-                            isSuccess={
-                                touched.username &&
-                                isUsernameComplete &&
-                                !errors.username
-                            }
-                            helperText={
-                                touched.username ? errors.username ?? "" : ""
-                            }
-                        />
-                        <ValidationChecklist
-                            title="Username requirements"
-                            items={usernameTips}
-                        />
-                    </div>
+                        <div className={getInputWrapperClass()}>
+                            <FormInput
+                                id="username"
+                                name="username"
+                                label="Username"
+                                placeholder="Enter username"
+                                value={inputs.username}
+                                onChange={handleInputs}
+                                onBlur={handleBlur}
+                                hasError={
+                                    touched.username && Boolean(errors.username)
+                                }
+                                isSuccess={
+                                    touched.username &&
+                                    isUsernameComplete &&
+                                    !errors.username
+                                }
+                                helperText={
+                                    touched.username
+                                        ? errors.username ?? ""
+                                        : ""
+                                }
+                            />
+                            <ValidationChecklist
+                                title="Username requirements"
+                                items={usernameTips}
+                            />
+                        </div>
 
-                    <div className={getInputWrapperClass()}>
-                        <FormInput
-                            id="password"
-                            name="password"
-                            type="password"
-                            label="Password"
-                            placeholder="Enter password"
-                            value={inputs.password}
-                            onChange={handleInputs}
-                            onBlur={handleBlur}
-                            hasError={
-                                touched.password && Boolean(errors.password)
-                            }
-                            isSuccess={
-                                touched.password &&
-                                isPasswordComplete &&
-                                !errors.password
-                            }
-                            helperText={
-                                touched.password ? errors.password ?? "" : ""
-                            }
-                        />
-                        <ValidationChecklist
-                            title="Password checklist"
-                            items={passwordTips}
-                        />
-                    </div>
+                        <div className={getInputWrapperClass()}>
+                            <FormInput
+                                id="password"
+                                name="password"
+                                type="password"
+                                label="Password"
+                                placeholder="Enter password"
+                                value={inputs.password}
+                                onChange={handleInputs}
+                                onBlur={handleBlur}
+                                hasError={
+                                    touched.password && Boolean(errors.password)
+                                }
+                                isSuccess={
+                                    touched.password &&
+                                    isPasswordComplete &&
+                                    !errors.password
+                                }
+                                helperText={
+                                    touched.password
+                                        ? errors.password ?? ""
+                                        : ""
+                                }
+                            />
+                            <ValidationChecklist
+                                title="Password checklist"
+                                items={passwordTips}
+                            />
+                        </div>
 
-                    <div className={getInputWrapperClass()}>
-                        <FormInput
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type="password"
-                            label="Confirm Password"
-                            placeholder="Confirm your password"
-                            value={inputs.confirmPassword}
-                            onChange={handleInputs}
-                            onBlur={handleBlur}
-                            hasError={
-                                touched.confirmPassword &&
-                                Boolean(errors.confirmPassword)
-                            }
-                            isSuccess={
-                                touched.confirmPassword &&
-                                isConfirmComplete &&
-                                !errors.confirmPassword &&
-                                inputs.confirmPassword === inputs.password
-                            }
-                            helperText={
-                                touched.confirmPassword
-                                    ? errors.confirmPassword ?? ""
-                                    : ""
-                            }
-                        />
-                        <ValidationChecklist
-                            title="Confirmation"
-                            items={confirmPasswordTips}
-                        />
-                    </div>
+                        <div className={getInputWrapperClass()}>
+                            <FormInput
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type="password"
+                                label="Confirm Password"
+                                placeholder="Confirm your password"
+                                value={inputs.confirmPassword}
+                                onChange={handleInputs}
+                                onBlur={handleBlur}
+                                hasError={
+                                    touched.confirmPassword &&
+                                    Boolean(errors.confirmPassword)
+                                }
+                                isSuccess={
+                                    touched.confirmPassword &&
+                                    isConfirmComplete &&
+                                    !errors.confirmPassword &&
+                                    inputs.confirmPassword === inputs.password
+                                }
+                                helperText={
+                                    touched.confirmPassword
+                                        ? errors.confirmPassword ?? ""
+                                        : ""
+                                }
+                            />
+                            <ValidationChecklist
+                                title="Confirmation"
+                                items={confirmPasswordTips}
+                            />
+                        </div>
 
-                    <div className="mt-6">
-                        <FormButton disabled={loading}>Sign Up</FormButton>
-                    </div>
-                </form>
+                        <div className="mt-6">
+                            <FormButton disabled={loading}>Sign Up</FormButton>
+                        </div>
+                    </form>
 
-                <FormFooter
-                    text="Already have an account?"
-                    linkText="Login"
-                    linkHref="/login"
-                />
-            </FormContainer>
-        </PageTransition>
+                    <FormFooter
+                        text="Already have an account?"
+                        linkText="Login"
+                        linkHref="/login"
+                    />
+                </FormContainer>
+            </PageTransition>
+        </div>
     );
 };
 

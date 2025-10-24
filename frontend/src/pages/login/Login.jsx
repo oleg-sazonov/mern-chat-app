@@ -12,6 +12,7 @@
  *   - `inputs`: Stores form values (username, password).
  *   - `errors`: Stores validation errors for each field.
  *   - `touched`: Tracks whether a field has been interacted with.
+ *   - `formError`: Stores a general error message for the form.
  *
  * Hooks:
  *   - `useLogin`: Custom hook for handling login API requests.
@@ -59,6 +60,7 @@ import { useLogin } from "../../hooks/auth/useLogin";
 import { loginSchema } from "../../utils/validationSchemas";
 import { extractErrors } from "../../utils/extractErrors";
 import { getUsernameTips, getPasswordTips } from "../../utils/validationTips";
+import { createHandleInputs, createHandleBlur } from "../../utils/formHandlers";
 import { getInputWrapperClass } from "../../styles/AuthStyles";
 
 import FormContainer from "../../components/form/FormContainer";
@@ -92,21 +94,13 @@ const Login = () => {
         };
     }, [inputs]);
 
-    const handleInputs = (e) => {
-        const { name, value } = e.target;
-        setInputs((prev) => ({ ...prev, [name]: value }));
-        setFormError("");
-        setErrors((prev) => {
-            if (!prev?.[name]) return prev;
-            const { [name]: _removed, ...rest } = prev;
-            return rest;
-        });
-    };
+    const handleInputs = createHandleInputs({
+        setInputs,
+        setErrors,
+        onChange: () => setFormError(""),
+    });
 
-    const handleBlur = (e) => {
-        const { name } = e.target;
-        setTouched((prev) => ({ ...prev, [name]: true }));
-    };
+    const handleBlur = createHandleBlur({ setTouched });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -134,11 +128,6 @@ const Login = () => {
         } else {
             setFormError("");
         }
-
-        // await handleLogin({
-        //     username: inputs.username,
-        //     password: inputs.password,
-        // });
     };
 
     const usernameTips = useMemo(
